@@ -1,12 +1,13 @@
-substrate,uptake_reaction,surviving_genes,uptake_blocked_in_IMK1010
-D-fructose,r_1134,HXT17,no
-D-galactose,,,yes
-D-glucose,r_1166,"CIN10, HXT17",no
-D-mannitol,,,n/a - absent from Yeast9
-D-mannose,r_1139,HXT17,no
-D-sorbitol,r_1717,HXT17,no
-D-xylitol,r_2105,FPS1,no
-ethanol,r_1762,(no gene rule: passive diffusion),no
-glycerol,r_1171,"GUP1, GUP2",no
-maltose,,,yes
-sucrose,,,yes
+substrate,carbon_source,uptake_reaction,surviving_genes,uptake_blocked_in_IMK1010
+D-fructose,D-fructose,r_1134,HXT17,no
+D-galactose,D-galactose,,,yes
+D-glucose,D-glucose,r_1166,"CIN10, HXT17",no
+D-mannitol,,,,n/a - absent from Yeast9
+D-mannose,D-mannose,r_1139,HXT17,no
+D-sorbitol,D-glucitol,r_1717,HXT17,no
+D-xylitol,xylitol,r_2105,FPS1,no
+ethanol + glycerol,ethanol,r_1762,(no gene rule: passive diffusion),no
+ethanol + glycerol,glycerol,r_1171,"GUP1, GUP2",no
+glycerol,glycerol,r_1171,"GUP1, GUP2",no
+maltose,maltose,,,yes
+sucrose,sucrose,,,yes

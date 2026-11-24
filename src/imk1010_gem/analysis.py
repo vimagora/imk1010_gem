@@ -49,22 +49,30 @@ YEAST9_NAMES = {
     # extracellular form and no exchange reaction, so Yeast9 cannot take it up
     # at all. Treated as unrepresentable and reported as such.
     "D-mannitol": "",
+    # de Valk et al. tested a single plate containing BOTH ethanol and
+    # glycerol, so growth on it cannot be attributed to either alone. Modelled
+    # as a medium with both carbon sources open.
+    "ethanol + glycerol": ["ethanol", "glycerol"],
 }
 
 
 def growth_on(
     model: cobra.Model,
-    substrate: str,
+    substrate: str | list[str],
     uptake: float = media.DEFAULT_UPTAKE,
     per_carbon: bool = False,
 ) -> float:
-    """Predicted growth rate (h^-1) with ``substrate`` as the only carbon source.
+    """Predicted growth rate (h^-1) on ``substrate`` as the only carbon source.
+
+    ``substrate`` may be a list of names, for a medium offering more than one
+    carbon source (de Valk's combined ethanol + glycerol plate).
 
     Returns 0.0 for an infeasible problem, which is what "cannot grow" looks
     like to the solver.
     """
     with model:
-        media.set_carbon_source(model, substrate, uptake=uptake, per_carbon=per_carbon)
+        names = [substrate] if isinstance(substrate, str) else list(substrate)
+        media.set_carbon_sources(model, names, uptake=uptake, per_carbon=per_carbon)
         # An infeasible problem is an expected outcome here -- it is what "this
         # strain cannot grow on this carbon source" looks like to the solver.
         # We check the status ourselves, so cobrapy's warning is just noise.
@@ -114,7 +122,10 @@ def carbon_panel(
         row: dict[str, object] = {
             "substrate": published_name,
             "model_metabolite": model_name,
-            "exchange": media.find_exchange(wild_type, model_name).id,
+            "exchange": ", ".join(
+                media.find_exchange(wild_type, n).id
+                for n in ([model_name] if isinstance(model_name, str) else model_name)
+            ),
         }
         for strain_name, model in all_models.items():
             rate = growth_on(model, model_name, uptake=uptake)
@@ -187,34 +198,33 @@ def uptake_survivor_table(
     substrates = substrates or DEVALK_SUBSTRATES
     orf_to_name = orf_to_name or {}
 
-    records = []
+    records: list[dict[str, str]] = []
     for published_name, model_name in substrates.items():
         if not model_name:
-            records.append({"substrate": published_name, "uptake_reaction": "",
-                            "surviving_genes": "", "uptake_blocked_in_IMK1010":
-                            "n/a - absent from Yeast9"})
+            records.append({"substrate": published_name, "carbon_source": "",
+                            "uptake_reaction": "", "surviving_genes": "",
+                            "uptake_blocked_in_IMK1010": "n/a - absent from Yeast9"})
             continue
-        survivors = strains.surviving_uptake_genes(wild_type, model_name, deleted_orfs)
-        if not survivors:
-            records.append(
-                {
+
+        # A condition may offer several carbon sources (ethanol + glycerol);
+        # report the routes for each one separately.
+        for single in [model_name] if isinstance(model_name, str) else model_name:
+            survivors = strains.surviving_uptake_genes(wild_type, single, deleted_orfs)
+            if not survivors:
+                records.append({"substrate": published_name, "carbon_source": single,
+                                "uptake_reaction": "", "surviving_genes": "",
+                                "uptake_blocked_in_IMK1010": "yes"})
+                continue
+            for reaction_id, orfs in survivors.items():
+                records.append({
                     "substrate": published_name,
-                    "uptake_reaction": "",
-                    "surviving_genes": "",
-                    "uptake_blocked_in_IMK1010": "yes",
-                }
-            )
-            continue
-        for reaction_id, orfs in survivors.items():
-            records.append(
-                {
-                    "substrate": published_name,
+                    "carbon_source": single,
                     "uptake_reaction": reaction_id,
                     "surviving_genes": ", ".join(orf_to_name.get(o, o) for o in orfs)
                     or "(no gene rule: passive diffusion)",
                     "uptake_blocked_in_IMK1010": "no",
-                }
-            )
+                })
+
     return pd.DataFrame.from_records(records)
 
 

@@ -1,15 +1,18 @@
 strain,strain_role,substrate,substrate_conc,conc_units,published_grows,culture,days,source_paper,source_location,verified_by_victor,notes
-IMK1010,Sugar0,D-glucose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,D-fructose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,D-galactose,20,g L-1,no,"solid plate (SM agar, 30 C)",3,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,sucrose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,maltose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,ethanol,2,% v/v,yes,"solid plate (SM agar, 30 C)",8,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010,Sugar0,glycerol,2,% v/v,yes,"solid plate (SM agar, 30 C)",8,deValk2022,Fig. 2 + Results text,,read from the Results sentence; VERIFY against Fig. 2
-IMK1010 + empty vector,negative control,glycerol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,,stated: glp strains grew 'compared to the negative control' | VERIFY: does the EV control grow on glycerol at all?
-IMK1010 + empty vector,negative control,D-mannitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,,stated | VERIFY: does the EV control grow on glycerol at all?
-IMK1010 + empty vector,negative control,D-sorbitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,,stated | VERIFY: does the EV control grow on glycerol at all?
-IMK1010 + empty vector,negative control,D-xylitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,,stated | VERIFY: does the EV control grow on glycerol at all?
-IMK1010 + empty vector,negative control,D-fructose,8,%,no,solid medium,6,Nummela2026,Fig. 4b,,"INFERRED from the assay design, not stated directly | VERIFY: does the EV control grow on glycerol at all?"
-IMK1010 + empty vector,negative control,D-glucose,8,%,no,solid medium,6,Nummela2026,Fig. 4b,,"INFERRED from the assay design, not stated directly | VERIFY: does the EV control grow on glycerol at all?"
-IMK1010 + empty vector,negative control,D-mannose,2,%,no,solid medium,6,Nummela2026,Fig. 4b,,"INFERRED from the assay design, not stated directly | VERIFY: does the EV control grow on glycerol at all?"
+IMK1010,Sugar0,D-glucose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2,yes,
+IMK1010,Sugar0,D-fructose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2,yes,
+IMK1010,Sugar0,D-galactose,20,g L-1,no,"solid plate (SM agar, 30 C)",3,deValk2022,Fig. 2,yes,
+IMK1010,Sugar0,sucrose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2,yes,
+IMK1010,Sugar0,maltose,20,g L-1,no,"solid plate (SM agar, 30 C)",2,deValk2022,Fig. 2,yes,
+IMK1010,Sugar0,ethanol + glycerol,2 + 2,% v/v each,yes,"solid plate (SM agar, 30 C)",8,deValk2022,Fig. 2,yes,ONE plate containing BOTH ethanol and glycerol. Growth cannot be attributed to glycerol: ethanol alone needs no sugar transporter. de Valk therefore gives NO evidence of glycerol-only growth
+IMK1010 + empty vector,negative control,glycerol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,yes,no growth at all
+IMK1010 + empty vector,negative control,D-mannitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,yes,no growth at all
+IMK1010 + empty vector,negative control,D-sorbitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,yes,no growth at all
+IMK1010 + empty vector,negative control,D-xylitol,1,%,no,solid medium,6,Nummela2026,Fig. 4a,yes,no growth at all
+IMK1010 + empty vector,negative control,D-fructose,8,%,no,solid medium,6,Nummela2026,Fig. 4b,yes,no growth at all
+IMK1010 + empty vector,negative control,D-glucose,8,%,no,solid medium,6,Nummela2026,Fig. 4b,yes,no growth at all
+IMK1010 + empty vector,negative control,D-mannose,2,%,no,solid medium,6,Nummela2026,Fig. 4b,yes,no growth at all
+IMK1010 + HXT5,positive control,D-glucose,8,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
+IMK1010 + HXT5,positive control,D-fructose,8,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
+IMK1010 + HXT5,positive control,D-mannose,2,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
+IMK1010 + HXT5,positive control,glycerol,1,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?

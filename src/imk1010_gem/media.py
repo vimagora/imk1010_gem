@@ -107,6 +107,36 @@ def close_all_carbon_sources(model: cobra.Model) -> None:
         reaction.lower_bound = 0.0
 
 
+def set_carbon_sources(
+    model: cobra.Model,
+    metabolite_names: list[str],
+    uptake: float = DEFAULT_UPTAKE,
+    per_carbon: bool = False,
+) -> list[cobra.Reaction]:
+    """Make ``metabolite_names`` the model's only carbon sources.
+
+    Needed because not every published condition offers a single substrate:
+    de Valk et al. (2022) tested one plate containing *both* ethanol and
+    glycerol, and growth there cannot be attributed to either alone.
+
+    Each named substrate gets the same uptake bound.
+    """
+    exchanges = [find_exchange(model, name) for name in metabolite_names]
+    if not exchanges:
+        raise ValueError("no carbon sources given")
+
+    close_all_carbon_sources(model)
+    for exchange in exchanges:
+        allowance = uptake
+        if per_carbon:
+            n_carbon = exchanged_metabolite(exchange).elements.get("C", 0)
+            if not n_carbon:
+                raise ValueError(f"{exchange.id} carries no carbon")
+            allowance = uptake / n_carbon
+        exchange.lower_bound = -abs(allowance)
+    return exchanges
+
+
 def set_carbon_source(
     model: cobra.Model,
     metabolite_name: str,

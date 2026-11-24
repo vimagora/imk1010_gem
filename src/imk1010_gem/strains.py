@@ -176,14 +176,19 @@ def allow_glycerol_channel_uptake(model: cobra.Model) -> cobra.Reaction:
     protein. Yeast9 nonetheless constrains r_1172 to export only, which means
     the model has *no* passive glycerol uptake route at all.
 
-    That matters for IMK1010. The strain lacks STL1 yet still grows on
-    glycerol, so it must take glycerol up by some route that is not the
-    STL1 proton symporter. Passive entry through Fps1 is the obvious
-    candidate, and the model cannot represent it as shipped.
+    KEPT FOR THE RECORD, BUT NOT NEEDED BY THE DATA.
 
-    This is a hypothesis-driven edit to the model, not a fact from a paper,
-    so it is applied explicitly and reported as a separate strain rather
-    than folded into the others.
+    We first reached for this because de Valk et al. appeared to show IMK1010
+    growing on glycerol despite lacking STL1, which would have required a
+    passive uptake route the model does not have. On a closer reading, their
+    ethanol/glycerol plate contained *both* carbon sources, and ethanol alone
+    accounts for the growth -- so there is no published evidence of
+    glycerol-only growth, and Nummela et al. (2026) report none for the
+    empty-vector control. No observation requires this edit.
+
+    It stays here because it is a real limitation of Yeast9 worth naming (a
+    channel modelled as one-way), and because the hypothesis and its
+    withdrawal belong in the record rather than being quietly deleted.
     """
     reaction = model.reactions.get_by_id(GLYCEROL_CHANNEL)
     reaction.lower_bound = -abs(reaction.upper_bound)
@@ -198,19 +203,31 @@ def _knock_out(model: cobra.Model, orfs: list[str]) -> None:
 
 
 def build_imk1010(
-    model: cobra.Model, path: pathlib.Path | str = DELETED_GENES_CSV
+    model: cobra.Model,
+    path: pathlib.Path | str = DELETED_GENES_CSV,
+    express: tuple[str, ...] = (),
 ) -> tuple[cobra.Model, GeneMapping]:
     """Return a copy of the model with the 32 published genes knocked out.
 
     Works on a copy so the wild-type model stays available for comparison in
     the same session.
+
+    Args:
+        express: common names of deleted genes to leave *functional*, for
+            modelling a complementation strain. Nummela et al. used
+            HXT5-expressing IMK1010 as a positive control, which is this
+            deletion background carrying HXT5 on a plasmid; in flux terms
+            that is the same as not deleting it.
     """
     names = [row["common_name"] for row in read_deleted_genes(path)]
     mapping = map_genes_to_model(model, names)
 
+    restored = {name.upper() for name in express}
+    to_delete = [orf for name, orf in mapping.mapped.items() if name.upper() not in restored]
+
     strain = model.copy()
-    strain.id = "IMK1010"
-    _knock_out(strain, mapping.orfs)
+    strain.id = "IMK1010" + ("+" + "+".join(sorted(restored)) if restored else "")
+    _knock_out(strain, to_delete)
     return strain, mapping
 
 
@@ -218,6 +235,7 @@ def build_repaired_imk1010(
     model: cobra.Model,
     substrates: list[str],
     path: pathlib.Path | str = DELETED_GENES_CSV,
+    express: tuple[str, ...] = (),
 ) -> tuple[cobra.Model, GeneMapping, dict[str, list[str]]]:
     """IMK1010 plus the genes Yeast9 leaves holding sugar uptake open.
 
@@ -240,8 +258,14 @@ def build_repaired_imk1010(
         if genes:
             extra[substrate] = genes
 
+    restored = {name.upper() for name in express}
+    name_to_orf = common_name_to_orf()
+    restored_orfs = {name_to_orf.get(n) for n in restored}
+
+    everything = set(mapping.orfs) | {o for orfs in extra.values() for o in orfs}
+    to_delete = sorted(everything - restored_orfs)
+
     strain = model.copy()
-    strain.id = "IMK1010_repaired"
-    _knock_out(strain, mapping.orfs)
-    _knock_out(strain, sorted({orf for orfs in extra.values() for orf in orfs}))
+    strain.id = "IMK1010_repaired" + ("+" + "+".join(sorted(restored)) if restored else "")
+    _knock_out(strain, to_delete)
     return strain, mapping, extra

@@ -98,8 +98,34 @@ def test_repaired_strain_predicts_no_glycerol_growth(repaired):
     assert not analysis.grows(analysis.growth_on(strain, "glycerol"))
 
 
-def test_bidirectional_channel_restores_glycerol_without_unblocking_hexoses(repaired):
-    """The resolution: Fps1 is a channel, so it should conduct both ways."""
+def test_repaired_strain_matches_the_published_glycerol_phenotype(repaired):
+    """No published source shows IMK1010 growing on glycerol alone.
+
+    de Valk's ethanol/glycerol plate contained both carbon sources, and
+    Nummela's empty-vector control did not grow on 1% glycerol.
+    """
+    strain, _, _ = repaired
+    assert not analysis.grows(analysis.growth_on(strain, "glycerol"))
+    # Ethanol alone accounts for growth on de Valk's combined plate.
+    assert analysis.grows(analysis.growth_on(strain, ["ethanol", "glycerol"]))
+    assert analysis.grows(analysis.growth_on(strain, "ethanol"))
+
+
+def test_hxt5_positive_control_restores_hexoses_only(model):
+    """Nummela's positive control: HXT5 is a hexose transporter.
+
+    If expressing it restored polyol growth too, the repair would be wrong.
+    """
+    substrates = ["D-glucose", "D-fructose", "D-mannose", "D-glucitol", "xylitol", "glycerol"]
+    strain, _, _ = strains.build_repaired_imk1010(model, substrates, express=("HXT5",))
+    for hexose in ["D-glucose", "D-fructose", "D-mannose"]:
+        assert analysis.grows(analysis.growth_on(strain, hexose)), hexose
+    for other in ["D-glucitol", "xylitol", "glycerol"]:
+        assert not analysis.grows(analysis.growth_on(strain, other)), other
+
+
+def test_withdrawn_fps1_hypothesis_still_behaves_as_documented(repaired):
+    """Kept for the record: the edit works, but no observation requires it."""
     strain, _, _ = repaired
     with strain:
         strains.allow_glycerol_channel_uptake(strain)

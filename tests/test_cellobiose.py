@@ -89,9 +89,25 @@ def test_secreted_bgl_rescues_wild_type_but_not_imk1010(model, repaired):
 
 
 def test_constructs_data_file_records_sources():
+    """Every construct must carry an accession and a citation it can be traced to."""
     rows = cellobiose.read_constructs()
-    assert {r["construct"] for r in rows} == {"NcBGL", "CtA", "secretedBGL"}
-    ncbgl = next(r for r in rows if r["construct"] == "NcBGL")
+    constructs = {r["construct"] for r in rows}
+    assert {"NcBGL (GH1-1)", "CtA", "secretedBGL"} <= constructs
+
+    ncbgl = next(r for r in rows if r["construct"].startswith("NcBGL"))
     assert ncbgl["localisation"] == "intracellular"
     assert ncbgl["accession"] == "XP_011393758.1"
-    assert ncbgl["gene_or_locus"] == "GH1-1 / NCU00130"
+    assert ncbgl["gene_or_locus"] == "NCU00130"
+
+    cta = next(r for r in rows if r["construct"] == "CtA")
+    assert cta["accession"] == "MH648002"
+    assert cta["gene_or_locus"] == "An12g09270"
+    # The name clash with A. nidulans CltA/CltB is a real trap; keep it recorded.
+    assert "CltA" in cta["notes"]
+
+    # Every construct taken from the literature cites where it was characterised.
+    for row in rows:
+        if row["source_organism"].startswith("("):
+            continue  # control constructs have no source paper
+        assert row["characterised_in"].strip()
+        assert row["doi_or_pmid"].strip()

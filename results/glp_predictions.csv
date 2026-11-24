@@ -1,0 +1,22 @@
+porter,substrate,published,predicted,growth_rate,verdict
+GlpA,D-fructose,not reported,no,0.0,no published result
+GlpA,D-glucose,not reported,no,0.0,no published result
+GlpA,D-mannitol,yes,not representable,,model cannot represent this substrate
+GlpA,D-mannose,not reported,no,0.0,no published result
+GlpA,D-sorbitol,yes,yes,0.086653,agrees
+GlpA,D-xylitol,yes,yes,0.072624,agrees
+GlpA,glycerol,yes,yes,0.043807,agrees
+GlpB,D-fructose,not reported,no,0.0,no published result
+GlpB,D-glucose,not reported,no,0.0,no published result
+GlpB,D-mannitol,yes,not representable,,model cannot represent this substrate
+GlpB,D-mannose,not reported,no,0.0,no published result
+GlpB,D-sorbitol,yes,yes,0.086653,agrees
+GlpB,D-xylitol,yes,yes,0.072624,agrees
+GlpB,glycerol,yes,yes,0.043807,agrees
+GlpC,D-fructose,yes,yes,0.0811,agrees
+GlpC,D-glucose,yes,yes,0.0811,agrees
+GlpC,D-mannitol,yes,not representable,,model cannot represent this substrate
+GlpC,D-mannose,yes,yes,0.0811,agrees
+GlpC,D-sorbitol,yes,yes,0.086653,agrees
+GlpC,D-xylitol,yes,yes,0.072624,agrees
+GlpC,glycerol,yes,yes,0.043807,agrees

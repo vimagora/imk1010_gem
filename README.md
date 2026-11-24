@@ -80,8 +80,7 @@ All data are from published work. No unpublished data are used.
 | **Xu L et al. (2024).** *Bioresource Technology* 391:130006. | Context on characterised fungal sugar transporters | Open access, Creative Commons (specific variant not confirmed) |
 | **Yeast9** — SysBioChalmers/yeast-GEM | The metabolic model | see repository |
 
-The repository owner is a co-author of Nummela et al. (2026) and of Xu et al.
-(2024).
+The repository owner is a co-author of Xu et al. (2024).
 
 Derived data files in `data/` record the `source_paper` and `source_location`
 (figure or table) for every value, so each number can be traced to its origin.

@@ -1,0 +1,8 @@
+strain,construct,growth_rate,grows,expected,matches_expectation
+wild type,"cellobiose available, no enzyme",0.0,no,no,yes
+IMK1010 repaired,"cellobiose available, no enzyme",0.0,no,no,yes
+IMK1010 + NcBGL,"intracellular BGL, no transporter",0.0,no,no,yes
+IMK1010 + NcBGL + CtA,intracellular BGL + CtA (H+ symport),0.160885,yes,yes,yes
+IMK1010 + NcBGL + CtA,intracellular BGL + CtA (facilitated),0.16527,yes,yes,yes
+wild type,"secreted BGL, no transporter",0.16527,yes,yes,yes
+IMK1010 repaired,"secreted BGL, no transporter",0.0,no,no,yes

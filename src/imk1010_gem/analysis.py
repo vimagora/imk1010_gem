@@ -21,7 +21,6 @@ RESULTS_DIR = pathlib.Path(__file__).resolve().parents[2] / "results"
 GROWTH_THRESHOLD = 1e-6
 
 # The carbon sources de Valk et al. (2022) tested, with the names Yeast9 uses.
-# Where the two differ, the published name is kept for reporting.
 DEVALK_SUBSTRATES = {
     "D-glucose": "D-glucose",
     "D-fructose": "D-fructose",
@@ -30,6 +29,26 @@ DEVALK_SUBSTRATES = {
     "maltose": "maltose",
     "ethanol": "ethanol",
     "glycerol": "glycerol",
+}
+
+# Published substrate name -> the name Yeast9 stores it under. Yeast9 uses some
+# synonyms, and one substrate is simply absent, so this mapping is explicit
+# rather than assumed. An empty string means the model cannot represent it.
+YEAST9_NAMES = {
+    "D-glucose": "D-glucose",
+    "D-fructose": "D-fructose",
+    "D-galactose": "D-galactose",
+    "D-mannose": "D-mannose",
+    "sucrose": "sucrose",
+    "maltose": "maltose",
+    "ethanol": "ethanol",
+    "glycerol": "glycerol",
+    "D-sorbitol": "D-glucitol",  # same molecule, different accepted name
+    "D-xylitol": "xylitol",
+    # Mannitol exists only as a cytosolic metabolite (s_3805) with no
+    # extracellular form and no exchange reaction, so Yeast9 cannot take it up
+    # at all. Treated as unrepresentable and reported as such.
+    "D-mannitol": "",
 }
 
 
@@ -81,6 +100,17 @@ def carbon_panel(
 
     records = []
     for published_name, model_name in substrates.items():
+        if not model_name:
+            # Yeast9 cannot represent this substrate at all (e.g. mannitol has
+            # no extracellular form). Record it rather than dropping it.
+            records.append({
+                "substrate": published_name,
+                "model_metabolite": "(absent from Yeast9)",
+                "exchange": "",
+                **{f"{n} growth": 0.0 for n in all_models},
+                **{f"{n} grows": "not representable" for n in all_models},
+            })
+            continue
         row: dict[str, object] = {
             "substrate": published_name,
             "model_metabolite": model_name,
@@ -99,13 +129,26 @@ def compare_with_published(
     phenotypes: pd.DataFrame,
     strain: str = "IMK1010",
     published_strain: str = "IMK1010",
+    source_paper: str | None = None,
 ) -> pd.DataFrame:
     """Join predictions to published growth/no-growth and flag disagreements.
 
     Rows where the published phenotype is blank are reported as "unknown"
     rather than counted as agreement -- an unfilled cell is not evidence.
+
+    Args:
+        source_paper: restrict the comparison to one paper. This matters:
+            de Valk et al. (2022) report growth of IMK1010 on 2% glycerol
+            after 8 days, while Nummela et al. (2026) report no growth of the
+            empty-vector control on 1% glycerol after 6 days. The two are not
+            necessarily contradictory -- a slow passive route can be visible
+            at one concentration and incubation time and not another -- but
+            FBA cannot distinguish them, so we never average the two. We score
+            against each source separately and report both.
     """
     published = phenotypes[phenotypes["strain"] == published_strain]
+    if source_paper is not None:
+        published = published[published["source_paper"] == source_paper]
     lookup = dict(zip(published["substrate"], published["published_grows"]))
 
     out = panel.copy()
@@ -114,7 +157,13 @@ def compare_with_published(
 
     verdicts = []
     for pred, obs in zip(predicted, out["published"]):
-        if obs not in {"yes", "no"}:
+        if pred == "not representable":
+            # Yeast9 has no uptake route for this substrate under any strain,
+            # so it can only ever predict "no growth". Scoring that as
+            # agreement with an observed no-growth would be vacuous, and as
+            # disagreement would be unfair. It is its own category.
+            verdicts.append("not representable")
+        elif obs not in {"yes", "no"}:
             verdicts.append("unknown")
         elif pred == obs:
             verdicts.append("agrees")
@@ -140,6 +189,11 @@ def uptake_survivor_table(
 
     records = []
     for published_name, model_name in substrates.items():
+        if not model_name:
+            records.append({"substrate": published_name, "uptake_reaction": "",
+                            "surviving_genes": "", "uptake_blocked_in_IMK1010":
+                            "n/a - absent from Yeast9"})
+            continue
         survivors = strains.surviving_uptake_genes(wild_type, model_name, deleted_orfs)
         if not survivors:
             records.append(

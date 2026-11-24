@@ -1,8 +1,12 @@
-substrate,exchange,published,wild type grows,IMK1010 grows,IMK1010 agreement,IMK1010 repaired grows,IMK1010 repaired agreement,IMK1010 repaired + Fps1 uptake grows,IMK1010 repaired + Fps1 uptake agreement,wild type growth,IMK1010 growth,IMK1010 repaired growth,IMK1010 repaired + Fps1 uptake growth
-D-glucose,r_1714,no,yes,yes,DISAGREES,no,agrees,no,agrees,0.0811,0.0811,0.0,0.0
-D-fructose,r_1709,no,yes,yes,DISAGREES,no,agrees,no,agrees,0.0811,0.0811,0.0,0.0
-D-galactose,r_1710,no,yes,no,agrees,no,agrees,no,agrees,0.076715,0.0,0.0,0.0
-sucrose,r_2058,no,yes,no,agrees,no,agrees,no,agrees,0.16527,0.0,0.0,0.0
-maltose,r_1931,no,yes,no,agrees,no,agrees,no,agrees,0.160885,0.0,0.0,0.0
-ethanol,r_1761,yes,yes,yes,agrees,yes,agrees,yes,agrees,0.026605,0.026605,0.026605,0.026605
-glycerol,r_1808,yes,yes,yes,agrees,no,DISAGREES,yes,agrees,0.039579,0.039579,0.0,0.043807
+substrate,model_metabolite,exchange,wild type growth,wild type grows,IMK1010 growth,IMK1010 grows,IMK1010 repaired growth,IMK1010 repaired grows,IMK1010 repaired + Fps1 inward growth,IMK1010 repaired + Fps1 inward grows,[deValk2022] published,[deValk2022] IMK1010,[deValk2022] IMK1010 repaired,[deValk2022] IMK1010 repaired + Fps1 inward,[Nummela2026] published,[Nummela2026] IMK1010,[Nummela2026] IMK1010 repaired,[Nummela2026] IMK1010 repaired + Fps1 inward
+D-fructose,D-fructose,r_1709,0.0811,yes,0.0811,yes,0.0,no,0.0,no,no,DISAGREES,agrees,agrees,no,DISAGREES,agrees,agrees
+D-galactose,D-galactose,r_1710,0.076715,yes,0.0,no,0.0,no,0.0,no,no,agrees,agrees,agrees,,unknown,unknown,unknown
+D-glucose,D-glucose,r_1714,0.0811,yes,0.0811,yes,0.0,no,0.0,no,no,DISAGREES,agrees,agrees,no,DISAGREES,agrees,agrees
+D-mannitol,(absent from Yeast9),,0.0,not representable,0.0,not representable,0.0,not representable,0.0,not representable,,not representable,not representable,not representable,no,not representable,not representable,not representable
+D-mannose,D-mannose,r_1715,0.076715,yes,0.076715,yes,0.0,no,0.0,no,,unknown,unknown,unknown,no,DISAGREES,agrees,agrees
+D-sorbitol,D-glucitol,r_1712,0.086653,yes,0.086653,yes,0.0,no,0.0,no,,unknown,unknown,unknown,no,DISAGREES,agrees,agrees
+D-xylitol,xylitol,r_2104,0.072624,yes,0.072624,yes,0.0,no,0.0,no,,unknown,unknown,unknown,no,DISAGREES,agrees,agrees
+ethanol,ethanol,r_1761,0.026605,yes,0.026605,yes,0.026605,yes,0.026605,yes,yes,agrees,agrees,agrees,,unknown,unknown,unknown
+glycerol,glycerol,r_1808,0.039579,yes,0.039579,yes,0.0,no,0.043807,yes,yes,agrees,DISAGREES,agrees,no,DISAGREES,agrees,DISAGREES
+maltose,maltose,r_1931,0.160885,yes,0.0,no,0.0,no,0.0,no,no,agrees,agrees,agrees,,unknown,unknown,unknown
+sucrose,sucrose,r_2058,0.16527,yes,0.0,no,0.0,no,0.0,no,no,agrees,agrees,agrees,,unknown,unknown,unknown

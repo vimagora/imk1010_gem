@@ -1,11 +1,21 @@
 """Part A: can Yeast9 reproduce the published phenotypes of IMK1010?
 
-Builds two strains and compares both with de Valk et al. (2022):
+Three strains are built and each is scored against *both* published sources
+separately:
 
-1. IMK1010 -- the 32 published deletions, faithful to the genotype.
+1. IMK1010 -- the 32 published deletions, faithful to the genotype. This is
+   the primary result.
 2. IMK1010 (repaired) -- additionally deleting the genes Yeast9 lists in
    sugar uptake rules that were never deleted in the real strain. No such
-   strain exists; it isolates the effect of the model's gene annotation.
+   strain exists in any lab; it isolates the effect of the model's annotation.
+3. IMK1010 (repaired, Fps1 conducting inwards) -- as 2, but allowing the
+   glycerol channel to work in both directions, as a channel does.
+
+Why score the sources separately: de Valk et al. (2022) saw IMK1010 grow on
+2% glycerol in 8 days, while Nummela et al. (2026) saw no growth of the
+empty-vector control on 1% glycerol in 6 days. Variant 3 reproduces the first
+observation and variant 2 the second. FBA has no concentrations, kinetics or
+time, so it cannot reconcile them, and we do not pretend otherwise.
 
 Writes results/carbon_panel.csv and results/uptake_survivors.csv.
 
@@ -18,7 +28,13 @@ import pandas as pd
 from imk1010_gem import analysis, strains
 from imk1010_gem.model_io import gene_name_map, load_model
 
-PHENOTYPES = analysis.RESULTS_DIR.parent / "data" / "devalk2022_phenotypes.csv"
+PHENOTYPES = analysis.RESULTS_DIR.parent / "data" / "published_phenotypes.csv"
+
+# (reporting name, strain name in the phenotype file, paper)
+SOURCES = [
+    ("de Valk 2022 (IMK1010)", "IMK1010", "deValk2022"),
+    ("Nummela 2026 (empty vector)", "IMK1010 + empty vector", "Nummela2026"),
+]
 
 
 def main() -> None:
@@ -32,73 +48,66 @@ def main() -> None:
     imk1010, mapping = strains.build_imk1010(model)
     print("\n" + mapping.summary())
 
-    substrates = list(analysis.DEVALK_SUBSTRATES.values())
-    repaired, _, extra = strains.build_repaired_imk1010(model, substrates)
+    # Repair over every substrate either paper tested, so the repaired strain
+    # is not quietly specific to one panel.
+    phenotypes = pd.read_csv(PHENOTYPES)
+    tested = sorted(set(phenotypes["substrate"]))
+    substrates = {name: analysis.YEAST9_NAMES.get(name, name) for name in tested}
 
-    print("\nGenes Yeast9 leaves holding sugar uptake open in IMK1010:")
-    for substrate, orfs in extra.items():
-        names = ", ".join(orf_to_name.get(o, o) for o in orfs)
-        print(f"  {substrate:12s} {names}")
-    if not extra:
-        print("  (none)")
+    repaired, _, extra = strains.build_repaired_imk1010(
+        model, [n for n in substrates.values() if n]
+    )
 
-    # A third variant: the repaired strain, but with the glycerol channel
-    # allowed to conduct inwards as a real channel would. See
-    # strains.allow_glycerol_channel_uptake for the reasoning.
+    print("\nGenes Yeast9 leaves holding uptake open in IMK1010:")
+    for substrate, orfs in sorted(extra.items()):
+        print(f"  {substrate:12s} {', '.join(orf_to_name.get(o, o) for o in orfs)}")
+
     bidirectional = repaired.copy()
-    bidirectional.id = "IMK1010_repaired_bidirectional_Fps1"
-    channel = strains.allow_glycerol_channel_uptake(bidirectional)
-    print(f"\nglycerol channel {channel.id} bounds in third variant: {channel.bounds}")
+    bidirectional.id = "IMK1010_repaired_Fps1_inward"
+    strains.allow_glycerol_channel_uptake(bidirectional)
+
+    variants = {
+        "IMK1010": imk1010,
+        "IMK1010 repaired": repaired,
+        "IMK1010 repaired + Fps1 inward": bidirectional,
+    }
 
     # --- the carbon panel ----------------------------------------------------
-    panel = analysis.carbon_panel(
-        model,
-        {
-            "IMK1010": imk1010,
-            "IMK1010 repaired": repaired,
-            "IMK1010 repaired + Fps1 uptake": bidirectional,
-        },
-    )
-    phenotypes = pd.read_csv(PHENOTYPES)
-    panel = analysis.compare_with_published(panel, phenotypes, strain="IMK1010")
+    panel = analysis.carbon_panel(model, variants, substrates=substrates)
 
-    # Score each variant against the same published phenotypes.
-    variants = ["IMK1010", "IMK1010 repaired", "IMK1010 repaired + Fps1 uptake"]
-    for variant in variants[1:]:
-        scored = analysis.compare_with_published(
-            panel.drop(columns=["published", "agreement"], errors="ignore"),
-            phenotypes,
-            strain=variant,
-        )
-        panel[f"{variant} agreement"] = scored["agreement"]
-    panel = panel.rename(columns={"agreement": "IMK1010 agreement"})
+    for label, published_strain, paper in SOURCES:
+        for variant in variants:
+            scored = analysis.compare_with_published(
+                panel, phenotypes, strain=variant,
+                published_strain=published_strain, source_paper=paper,
+            )
+            panel[f"[{paper}] published"] = scored["published"]
+            panel[f"[{paper}] {variant}"] = scored["agreement"]
 
-    columns = (
-        ["substrate", "exchange", "published", "wild type grows"]
-        + [c for v in variants for c in (f"{v} grows", f"{v} agreement")]
-        + ["wild type growth"] + [f"{v} growth" for v in variants]
-    )
-    panel = panel[columns]
+    print("\n=== Predicted growth ===")
+    print(panel[["substrate", "exchange"]
+                + [f"{v} grows" for v in variants]].to_string(index=False))
 
-    print("\n=== Carbon panel: predicted vs published ===")
-    print(panel[["substrate", "published"]
-                + [c for v in variants for c in (f"{v} grows", f"{v} agreement")]
-                ].to_string(index=False))
+    for label, _, paper in SOURCES:
+        cols = [f"[{paper}] {v}" for v in variants]
+        sub = panel[panel[f"[{paper}] published"].isin(["yes", "no"])]
+        # Substrates Yeast9 cannot represent are excluded from the score and
+        # reported separately, so the denominator is not quietly inflated.
+        scoreable = sub[sub[f"[{paper}] {list(variants)[0]}"] != "not representable"]
+        print(f"\n=== vs {label}: {len(sub)} substrates with a published phenotype ===")
+        print(sub[["substrate", f"[{paper}] published"]
+                  + [f"{v} grows" for v in variants]].to_string(index=False))
+        n_absent = len(sub) - len(scoreable)
+        for variant, col in zip(variants, cols):
+            print(f"  {variant:32s} {(scoreable[col] == 'agrees').sum()}/{len(scoreable)}")
+        if n_absent:
+            print(f"  ({n_absent} substrate(s) excluded: not representable in Yeast9)")
 
     survivors = analysis.uptake_survivor_table(
-        model, mapping.orfs, orf_to_name=orf_to_name
+        model, mapping.orfs, substrates=substrates, orf_to_name=orf_to_name
     )
-
     for frame, name in [(panel, "carbon_panel.csv"), (survivors, "uptake_survivors.csv")]:
         print(f"\nwrote {analysis.write_csv(frame, name)}")
-
-    known = panel[panel["IMK1010 agreement"] != "unknown"]
-    if len(known):
-        print(f"\nAgreement with de Valk et al. (2022), "
-              f"{len(known)} substrates with a published phenotype:")
-        for variant in variants:
-            n_agree = (known[f"{variant} agreement"] == "agrees").sum()
-            print(f"  {variant:34s} {n_agree}/{len(known)}")
 
 
 if __name__ == "__main__":

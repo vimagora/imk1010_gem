@@ -92,8 +92,8 @@ def test_repaired_strain_cannot_grow_on_glucose(repaired):
     assert "YNR072W" in extra["D-glucose"]  # HXT17 had to be deleted
 
 
-def test_repaired_strain_loses_the_correct_glycerol_prediction(repaired):
-    """Blocking the hexose leak also blocks glycerol: the repair is not free."""
+def test_repaired_strain_predicts_no_glycerol_growth(repaired):
+    """Blocking the hexose leak also blocks glycerol.\n\n    This matches Nummela et al. (2026), whose empty-vector control did not\n    grow on 1% glycerol, but contradicts de Valk et al. (2022), who saw\n    growth on 2% glycerol after 8 days. The two models bracket the two\n    observations; see scripts/run_part_a.py.\n    """
     strain, _, _ = repaired
     assert not analysis.grows(analysis.growth_on(strain, "glycerol"))
 

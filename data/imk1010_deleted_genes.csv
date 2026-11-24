@@ -1,0 +1,33 @@
+common_name,category,lineage,orf_from_paper,source_paper,source_location,notes
+GAL2,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT1,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT2,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT3,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT4,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT5,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT6,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT7,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT8,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT9,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT10,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT11,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT12,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT13,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT14,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT15,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+HXT16,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),
+MPH2,transporter,Suc0,YDL247W,deValk2022,Table 1 (IMK1010 relevant genotype),ORF printed in the Wijsman 2019 genotype
+MPH3,transporter,Suc0,YJR160C,deValk2022,Table 1 (IMK1010 relevant genotype),ORF printed in the Wijsman 2019 genotype
+MAL11,transporter,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),mal11-mal12 locus; also deleted in IMX1812
+MAL21,transporter,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),mal21-mal22 locus; MAL2 locus is CEN.PK-specific
+MAL31,transporter,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),mal31-mal32 locus
+STL1,transporter,Hxt0,,deValk2022,Table 1 (IMK1010 relevant genotype),glycerol/H+ symporter
+MAL12,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),"maltase, mal11-mal12 locus"
+MAL22,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),"maltase, mal21-mal22 locus"
+MAL32,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),"maltase, mal31-mal32 locus"
+SUC2,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),invertase
+IMA1,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),isomaltase family
+IMA2,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),isomaltase family
+IMA3,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),isomaltase family
+IMA4,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),isomaltase family
+IMA5,hydrolase,Suc0,,deValk2022,Table 1 (IMK1010 relevant genotype),isomaltase family

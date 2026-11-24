@@ -1,0 +1,8 @@
+substrate,uptake_reaction,surviving_genes,uptake_blocked_in_IMK1010
+D-glucose,r_1166,"CIN10, HXT17",no
+D-fructose,r_1134,HXT17,no
+D-galactose,,,yes
+sucrose,,,yes
+maltose,,,yes
+ethanol,r_1762,(no gene rule: passive diffusion),no
+glycerol,r_1171,"GUP1, GUP2",no

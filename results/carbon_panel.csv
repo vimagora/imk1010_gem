@@ -1,0 +1,8 @@
+substrate,exchange,published,wild type grows,IMK1010 grows,IMK1010 agreement,IMK1010 repaired grows,IMK1010 repaired agreement,IMK1010 repaired + Fps1 uptake grows,IMK1010 repaired + Fps1 uptake agreement,wild type growth,IMK1010 growth,IMK1010 repaired growth,IMK1010 repaired + Fps1 uptake growth
+D-glucose,r_1714,no,yes,yes,DISAGREES,no,agrees,no,agrees,0.0811,0.0811,0.0,0.0
+D-fructose,r_1709,no,yes,yes,DISAGREES,no,agrees,no,agrees,0.0811,0.0811,0.0,0.0
+D-galactose,r_1710,no,yes,no,agrees,no,agrees,no,agrees,0.076715,0.0,0.0,0.0
+sucrose,r_2058,no,yes,no,agrees,no,agrees,no,agrees,0.16527,0.0,0.0,0.0
+maltose,r_1931,no,yes,no,agrees,no,agrees,no,agrees,0.160885,0.0,0.0,0.0
+ethanol,r_1761,yes,yes,yes,agrees,yes,agrees,yes,agrees,0.026605,0.026605,0.026605,0.026605
+glycerol,r_1808,yes,yes,yes,agrees,no,DISAGREES,yes,agrees,0.039579,0.039579,0.0,0.043807

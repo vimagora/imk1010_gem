@@ -353,7 +353,10 @@ def _save(fig, stem: str) -> pathlib.Path:
     FIGURES.mkdir(parents=True, exist_ok=True)
     png = FIGURES / f"{stem}.png"
     fig.savefig(png, dpi=200, facecolor=SURFACE)
-    fig.savefig(FIGURES / f"{stem}.pdf", facecolor=SURFACE)  # vector, for print
+    # Suppress the PDF creation timestamp: without this the file differs on
+    # every run and shows up as a spurious change in version control.
+    fig.savefig(FIGURES / f"{stem}.pdf", facecolor=SURFACE,
+                metadata={"CreationDate": None})  # vector, for print
     plt.close(fig)
     return png
 

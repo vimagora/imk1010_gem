@@ -1,0 +1,13 @@
+{
+  "model": "Yeast9 (yeast-GEM)",
+  "repository": "https://github.com/SysBioChalmers/yeast-GEM",
+  "release_tag": "v9.1.1",
+  "release_name": "yeast 9.1.1",
+  "release_published": "2026-08-30T14:29:12Z",
+  "commit_sha": "2d594ae1c4a2d550ccef120d96a58c7bbf586255",
+  "file": "model/yeast-GEM.xml",
+  "source_url": "https://raw.githubusercontent.com/SysBioChalmers/yeast-GEM/v9.1.1/model/yeast-GEM.xml",
+  "sha256": "30842b15eefb0ef7e36cbdea86a9efddfacf69a871c8b054165faa9af9f6c8eb",
+  "size_bytes": 11568534,
+  "downloaded_utc": "2026-11-24T10:28:04Z"
+}

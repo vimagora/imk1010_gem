@@ -1,6 +1,9 @@
 # Private working folder: notes, papers and data tables that never go public
 90_documents/
 
+# Yeast9 SBML: ~12 MB, fetched by scripts/download_model.py
+data/model/*.xml
+
 # Python
 __pycache__/
 *.pyc

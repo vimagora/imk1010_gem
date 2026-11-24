@@ -1,4 +1,4 @@
-"""Figures for Parts A and B.
+"""Figures for Parts A, B and C.
 
 Both figures are categorical state matrices, not magnitude heatmaps: each cell
 holds one of four *states* (growth, no growth, not reported, not representable),
@@ -21,6 +21,7 @@ Every number is read from results/*.csv. Run the analyses first:
 
     python scripts/run_part_a.py
     python scripts/run_part_b.py
+    python scripts/run_part_c.py
     python scripts/make_figures.py
 """
 
@@ -33,6 +34,7 @@ import pandas as pd
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib import patheffects
 from matplotlib.lines import Line2D
 from matplotlib.patches import FancyBboxPatch
 
@@ -60,6 +62,19 @@ STATES = {
     "not representable": (ABSENT, "⌀", INK_SECONDARY, "////"),
 }
 
+# Figure 3 also has to show which *components* a construct carries, which is a
+# different question from whether it grew. Those cells therefore use a separate
+# neutral vocabulary: dark grey for a component that is present, and glyphs
+# that do not collide with the growth glyphs (+ / −). Growth blue is reserved
+# for growth alone, so the two column groups can never be misread as each other.
+COMPONENT = "#55544f"
+COMPONENT_STATES = {
+    "intracellular": (COMPONENT, "IN", "#ffffff", None),
+    "secreted": (COMPONENT, "OUT", "#ffffff", "////"),
+    "present": (COMPONENT, "●", "#ffffff", None),
+    "absent": (NO_GROWTH, "○", INK_MUTED, None),
+}
+
 # A fixed, meaningful row order: hexoses, disaccharides, polyols, then the
 # combined plate. Rows absent from a panel are dropped, never reordered.
 ROW_ORDER = [
@@ -84,9 +99,15 @@ def _state_of(value: object) -> str:
     return "not reported"
 
 
-def draw_cell(ax, x: int, y: int, state: str, disagrees: bool = False) -> None:
-    """Draw one state cell, with a disagreement overlay if needed."""
-    fill, glyph, glyph_colour, hatch = STATES[state]
+def draw_cell(ax, x: int, y: int, state: str, disagrees: bool = False,
+              states: dict | None = None) -> None:
+    """Draw one state cell, with a disagreement overlay if needed.
+
+    ``states`` selects the vocabulary: the growth states by default, or
+    COMPONENT_STATES for Figure 3's construct columns.
+    """
+    fill, glyph, glyph_colour, hatch = (states or STATES)[state]
+    glyph_size = 11 if len(glyph) == 1 else 7.5
 
     ax.add_patch(
         FancyBboxPatch(
@@ -111,8 +132,14 @@ def draw_cell(ax, x: int, y: int, state: str, disagrees: bool = False) -> None:
             )
         )
 
-    ax.text(x, y, glyph, ha="center", va="center", color=glyph_colour,
-            fontsize=11, fontweight="bold", zorder=5)
+    glyph_text = ax.text(x, y, glyph, ha="center", va="center", color=glyph_colour,
+                         fontsize=glyph_size, fontweight="bold", zorder=5)
+    if hatch:
+        # Hatch lines cross the glyph and can turn "OUT" into "ØUT". A stroke
+        # in the cell's own fill colour keeps the glyph legible.
+        glyph_text.set_path_effects(
+            [patheffects.withStroke(linewidth=2.6, foreground=fill)]
+        )
 
     if disagrees:
         ax.add_patch(
@@ -127,7 +154,8 @@ def draw_cell(ax, x: int, y: int, state: str, disagrees: bool = False) -> None:
 
 def _frame(ax, columns: list[str], rows: list[str], title: str, subtitle: str,
            header_offset: int = 34,
-           group_headers: list[tuple[str, float, float]] | None = None) -> None:
+           group_headers: list[tuple[str, float, float]] | None = None,
+           group_y: float = -1.12) -> None:
     """Set up one matrix panel.
 
     Titles are positioned in *offset points* from the top of the axes rather
@@ -159,12 +187,12 @@ def _frame(ax, columns: list[str], rows: list[str], title: str, subtitle: str,
     if group_headers:
         for label, start, end in group_headers:
             ax.annotate(
-                label, xy=((start + end) / 2, -1.12), xycoords="data",
+                label, xy=((start + end) / 2, group_y), xycoords="data",
                 xytext=(0, 6), textcoords="offset points",
                 ha="center", va="bottom", fontsize=9.5, fontweight="bold",
                 color=INK, annotation_clip=False,
             )
-            ax.plot([start - 0.38, end + 0.38], [-1.12, -1.12],
+            ax.plot([start - 0.38, end + 0.38], [group_y, group_y],
                     color=HAIRLINE, linewidth=1.0, clip_on=False,
                     solid_capstyle="butt")
 
@@ -349,6 +377,152 @@ def figure_part_b(table: pd.DataFrame) -> pathlib.Path:
     return _save(fig, "figure2_part_b_glp_porters")
 
 
+# --------------------------------------------------------------------------
+# Figure 3: Part C
+# --------------------------------------------------------------------------
+
+def _components(construct: str) -> tuple[str, str, str]:
+    """Read a construct description into (beta-glucosidase, transporter, detail).
+
+    Parsed from the construct strings written by run_part_c.py rather than
+    hardcoded, so the figure cannot drift out of step with the analysis.
+    """
+    text = construct.lower()
+    if "secreted bgl" in text:
+        bgl = "secreted"
+    elif "intracellular bgl" in text:
+        bgl = "intracellular"
+    else:
+        bgl = "absent"
+
+    if "cta" in text:
+        transporter = "present"
+        detail = "CtA, H⁺ symport" if "symport" in text else "CtA, facilitated"
+    else:
+        transporter = "absent"
+        detail = "—"
+    return bgl, transporter, detail
+
+
+def figure_part_c(table: pd.DataFrame) -> pathlib.Path:
+    # Keep the order run_part_c.py produced: it is the argument of the
+    # experiment, from "nothing added" through to the two controls.
+    rows = list(table.index)
+    # Short column names: "enzyme" rather than the full name, which would not
+    # fit a cell width. The legend spells out what the enzyme is.
+    labels = ["enzyme", "transporter", "expected", "observed"]
+
+    # Row labels carry the transporter variant, so the matrix needs no extra
+    # text column and the right margin is free for the rate and the findings.
+    row_labels = []
+    for key in rows:
+        record = table.loc[key]
+        _, _, detail = _components(str(record["construct"]))
+        suffix = f"\n({detail.split(', ')[-1]})" if detail != "—" else ""
+        row_labels.append(f"{record['strain']}{suffix}")
+
+    fig = plt.figure(figsize=(8.0, 6.6), facecolor=SURFACE)
+    ax = fig.add_subplot(
+        fig.add_gridspec(1, 1, left=0.31, right=0.68, top=0.62, bottom=0.27)[0]
+    )
+
+    _frame(ax, labels, row_labels,
+           "Cellobiose needs both a transporter and a hydrolase",
+           "Which one is missing is the experiment; the strain supplies only the enzyme",
+           header_offset=52,
+           group_headers=[("construct", 0.0, 1.0),
+                          ("growth on cellobiose", 2.0, 3.0)],
+           group_y=-1.62)
+    # Two-line row labels need a smaller size than the single-line labels the
+    # other figures use, or consecutive rows touch.
+    ax.set_yticklabels(row_labels, fontsize=8.3, color=INK, linespacing=1.4)
+
+    markers = {2: "1", 3: "1", 4: "1", 5: "2", 6: "2"}
+
+    for row_index, key in enumerate(rows):
+        record = table.loc[key]
+        bgl, transporter, _ = _components(str(record["construct"]))
+
+        draw_cell(ax, 0, row_index, bgl, states=COMPONENT_STATES)
+        draw_cell(ax, 1, row_index, transporter, states=COMPONENT_STATES)
+        draw_cell(ax, 2, row_index, _state_of(record["expected"]))
+        draw_cell(ax, 3, row_index, _state_of(record["grows"]),
+                  disagrees=str(record["matches_expectation"]).upper() == "NO")
+
+        # The symport/facilitated difference is invisible as a state and only
+        # shows up as a rate, so the rate is printed alongside.
+        rate = float(record["growth_rate"])
+        ax.annotate(f"{rate:.4f}" if rate else "—",
+                    xy=(4.45, row_index), xycoords="data",
+                    ha="right", va="center", fontsize=8.5,
+                    color=INK if rate else INK_MUTED,
+                    fontweight="bold" if rate else "normal",
+                    annotation_clip=False)
+        if row_index in markers:
+            ax.annotate(markers[row_index], xy=(4.95, row_index),
+                        xycoords="data", ha="center", va="center",
+                        fontsize=8, color=CRITICAL, fontweight="bold",
+                        annotation_clip=False)
+
+    ax.set_xlim(-0.5, 3.5)
+    ax.annotate("growth (h⁻¹)", xy=(4.45, -1.02), xycoords="data", ha="right",
+                va="center", fontsize=7.5, color=INK_SECONDARY,
+                annotation_clip=False)
+
+    # Brackets tying each numbered note to the rows that carry it.
+    for top, bottom, label in [(2, 4, "1"), (5, 6, "2")]:
+        ax.plot([4.72, 4.72], [top - 0.44, bottom + 0.44], color=CRITICAL,
+                linewidth=2.0, clip_on=False, solid_capstyle="butt")
+
+    matches = (table["matches_expectation"].str.lower() == "yes").sum()
+
+    fig.text(0.03, 0.975,
+             "Figure 3  A cellobiose platform strain: IMK1010 + NcBGL",
+             fontsize=12, fontweight="bold", color=INK, va="top", ha="left")
+    fig.text(
+        0.03, 0.945,
+        "S. cerevisiae lacks both a cellobiose transporter and a beta-glucosidase, so two things are missing.\n"
+        f"Supplying only the enzyme isolates transport as the variable. {matches}/{len(table)} results match expectation.\n"
+        "Cellobiose is absent from Yeast9 entirely: this part extends the model, and is reported as an extension.",
+        fontsize=8.5, color=INK_SECONDARY, va="top", ha="left", linespacing=1.5,
+    )
+
+    # The two findings, full width so they are not cramped into a margin.
+    for offset, (number, note) in enumerate([
+        ("1", "The enzyme alone does not grow; adding CtA does. "
+              "Transport is the limiting step, not the hydrolase."),
+        ("2", "The same enzyme secreted instead of intracellular rescues wild type "
+              "but not IMK1010:\n     the glucose it releases stays outside, and "
+              "IMK1010 has no hexose transporter left."),
+    ]):
+        fig.text(0.03, 0.225 - offset * 0.055, number, fontsize=8.5,
+                 color=CRITICAL, fontweight="bold", va="top", ha="left")
+        fig.text(0.055, 0.225 - offset * 0.055, note, fontsize=8.5,
+                 color=INK_SECONDARY, va="top", ha="left", linespacing=1.5)
+
+    handles = [
+        Line2D([], [], marker="s", linestyle="none", markersize=11,
+               markerfacecolor=COMPONENT_STATES[state][0],
+               markeredgecolor=HAIRLINE,
+               label=f"{COMPONENT_STATES[state][1]}   {label}")
+        for state, label in [("intracellular", "enzyme, intracellular"),
+                             ("secreted", "enzyme, secreted"),
+                             ("present", "component present"),
+                             ("absent", "component absent")]
+    ] + [
+        Line2D([], [], marker="s", linestyle="none", markersize=11,
+               markerfacecolor=GROWTH, markeredgecolor=HAIRLINE, label="+   growth"),
+        Line2D([], [], marker="s", linestyle="none", markersize=11,
+               markerfacecolor=NO_GROWTH, markeredgecolor=HAIRLINE,
+               label="−   no growth"),
+    ]
+    fig.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.03, 0.005),
+               frameon=False, fontsize=8.5, ncol=3, handletextpad=0.6,
+               columnspacing=1.8, labelcolor=INK_SECONDARY)
+
+    return _save(fig, "figure3_part_c_cellobiose")
+
+
 def _save(fig, stem: str) -> pathlib.Path:
     FIGURES.mkdir(parents=True, exist_ok=True)
     png = FIGURES / f"{stem}.png"
@@ -364,8 +538,10 @@ def _save(fig, stem: str) -> pathlib.Path:
 def main() -> None:
     panel = pd.read_csv(RESULTS / "carbon_panel.csv")
     glp = pd.read_csv(RESULTS / "glp_predictions.csv")
+    cellobiose = pd.read_csv(RESULTS / "cellobiose_panel.csv")
 
-    for path in [figure_part_a(panel), figure_part_b(glp)]:
+    for path in [figure_part_a(panel), figure_part_b(glp),
+                 figure_part_c(cellobiose)]:
         print(f"wrote {path}")
         print(f"wrote {path.with_suffix('.pdf')}")
 

@@ -6,9 +6,11 @@ strain built specifically to *abolish* sugar uptake? IMK1010 ("Sugar0") is a
 have been deleted, so that it grows on almost no sugar; it exists as a platform
 for characterising heterologous transporters. This project reconstructs IMK1010
 in **Yeast9** with COBRApy, compares flux-balance predictions with the published
-growth phenotypes, and then asks whether adding three *Aspergillus niger*
+growth phenotypes, then asks whether adding three *Aspergillus niger*
 glycerol/polyol transporters (GlpA, GlpB, GlpC) restores growth in the model in
-the same pattern reported experimentally. The headline result is a negative one:
+the same pattern reported experimentally, and finally builds a cellobiose
+platform strain to ask a question the first two parts cannot: what happens when
+a transporter is *not* enough on its own. The headline result is a negative one:
 the genotype-faithful reconstruction fails, for a specific and traceable reason
 in the model's gene–protein–reaction rules.
 
@@ -27,6 +29,10 @@ in the model's gene–protein–reaction rules.
    GlpB do not restore growth on hexoses, GlpC does.
 4. **Yeast9 cannot represent mannitol uptake at all**, although it carries the
    mannitol catabolic step. The gap is transport, not pathway.
+5. For cellobiose, by contrast, **transport is not sufficient**: a hydrolase is
+   needed as well. A platform strain carrying only the enzyme isolates which of
+   the two is limiting, and the localisation of that enzyme decides whether the
+   strain can grow at all.
 
 ## How to run
 
@@ -38,8 +44,9 @@ pip install -e .
 python scripts/download_model.py         # fetches Yeast9 and verifies its SHA-256
 python scripts/run_part_a.py             # -> results/carbon_panel.csv, uptake_survivors.csv
 python scripts/run_part_b.py             # -> results/glp_predictions.csv
+python scripts/run_part_c.py             # -> results/cellobiose_panel.csv
 python scripts/make_figures.py           # -> results/figures/
-pytest                                   # 34 tests
+pytest                                   # 44 tests
 ```
 
 The SBML file is about 12 MB and is therefore **not** committed. It is fetched by
@@ -78,6 +85,10 @@ All data are from published work. No unpublished data are used.
 | **Wijsman M et al. (2019).** *FEMS Yeast Research.* | Cross-check of the Hxt0 (IMX1812) hexose-transporter gene list | CC BY-NC-ND 4.0 — facts only; no tables or figures reproduced here |
 | **Nummela et al. (2026).** | GlpA/GlpB/GlpC substrate specificity in IMK1010 (Fig. 4) | CC BY 4.0 |
 | **Xu L et al. (2024).** *Bioresource Technology* 391:130006. | Context on characterised fungal sugar transporters | Open access, Creative Commons (specific variant not confirmed) |
+| **Galagan J, Calvo S, Borkovich K et al. (2003).** *Nature* 422:859–868. [doi:10.1038/nature01554](https://doi.org/10.1038/nature01554) | *N. crassa* genome; prediction of NCU00130 | — |
+| **Galazka JM et al. (2010).** *Science* 330:84–86. [doi:10.1126/science.1192838](https://doi.org/10.1126/science.1192838) | Characterisation of the intracellular β-glucosidase GH1-1 used as `NcBGL` | — |
+| **Lin H, Zhao J, Zhang Q, Cui S, Fan Z, Chen H, Tian C (2020).** *Frontiers in Microbiology* 11:145. [doi:10.3389/fmicb.2020.00145](https://doi.org/10.3389/fmicb.2020.00145) | Characterisation of the *A. niger* cellodextrin transporter CtA | — |
+| **Liu JJ, Zhang GC, Oh EJ, Pathanibul P, Turner TL, Jin YS (2016).** *Journal of Biotechnology* 234:99–104. [doi:10.1016/j.jbiotec.2016.07.018](https://doi.org/10.1016/j.jbiotec.2016.07.018), PMID 27457698 | Confirms GH1-1 lactose activity (recorded in `data/`, not modelled here) | — |
 | **Yeast9** — SysBioChalmers/yeast-GEM | The metabolic model | see repository |
 
 The repository owner is a co-author of Xu et al. (2024).
@@ -189,6 +200,89 @@ and a transport reaction — restores growth for all three porters (0.0867 h⁻�
 beyond what Yeast9 ships; it is applied to a separate, labelled strain and
 reported as an extension, never folded into the main results.
 
+## Part C — a cellobiose platform strain
+
+Parts A and B both ask the same question: is transport the missing step? For
+every substrate there, the answer is yes — open the uptake route and the model
+grows. Cellobiose is the case where that is not true.
+
+*S. cerevisiae* has neither a cellobiose transporter nor a β-glucosidase, so
+**two** things are missing, and which one limits growth is the experiment. The
+platform strain supplies only the enzyme: IMK1010 (repaired) carrying an
+intracellular β-glucosidase, `NcBGL`, modelled after *N. crassa* GH1-1
+(NCU00130, XP_011393758.1). Adding a transporter is then the single variable,
+which is how such transporters are characterised experimentally, and it mirrors
+Part B's empty-vector control.
+
+**Cellobiose is absent from Yeast9 entirely** — no metabolite, no exchange
+reaction, no transport. Part C therefore *extends* the model with an
+extracellular and a cytosolic pool, an exchange reaction, a transporter and a
+hydrolase. Like the mannitol extension in Part B, this is reported as an
+extension and never as a result the published model produced.
+
+![Figure 3](results/figures/figure3_part_c_cellobiose.png)
+
+| Strain | Construct | Growth (h⁻¹) |
+|---|---|---|
+| wild type | cellobiose available, no enzyme | 0.0000 |
+| IMK1010 (repaired) | cellobiose available, no enzyme | 0.0000 |
+| **IMK1010 + NcBGL** | intracellular BGL, **no transporter** | **0.0000** |
+| **IMK1010 + NcBGL + CtA** | intracellular BGL + CtA (H⁺ symport) | **0.1609** |
+| **IMK1010 + NcBGL + CtA** | intracellular BGL + CtA (facilitated) | **0.1653** |
+| wild type | secreted BGL, no transporter | 0.1653 |
+| IMK1010 (repaired) | secreted BGL, no transporter | 0.0000 |
+
+7/7 results match expectation. The transporter is **CtA** from *A. niger*
+(locus An12g09270, accession MH648002), characterised by Lin et al. (2020).
+Note that CtA is **not** the same gene as *A. nidulans* CltA/CltB (dos Reis et
+al. 2016), despite the similar name; the data file records the warning.
+
+### Localisation is the design, not a detail
+
+The last two rows are a control on the enzyme's location rather than on its
+activity. A **secreted** β-glucosidase hydrolyses cellobiose outside the cell
+and releases glucose into the medium: wild type grows on that (0.1653), and
+IMK1010 cannot (0.0000), because it has no hexose transporter left to take the
+glucose back up.
+
+This matters beyond the model. "β-glucosidase" on its own is an
+under-specified construct — several well-known BGL1 enzymes are secreted, and
+in this background a secreted one would produce a dead strain no matter which
+transporter accompanied it.
+
+### Two things asserted by tests rather than by prose
+
+- **The hydrolysis is mass-balanced**: C₁₂H₂₂O₁₁ + H₂O → 2 C₆H₁₂O₆, checked
+  with `reaction.check_mass_balance()`. If it did not balance, every number
+  downstream would be meaningless.
+- **The reaction contains no NAD(P)H or FAD.** A β-glucosidase is a hydrolase,
+  not a dehydrogenase, so there is no redox step and no cofactor imbalance to
+  resolve — unlike a cellobiose dehydrogenase, or the xylose
+  reductase/xylitol dehydrogenase pair.
+
+### What the transport mechanism costs
+
+CtA's mechanism is not confirmed in the source, so both proton symport and
+facilitated diffusion are run and reported. Growth/no-growth is unaffected;
+symport costs **2.7%** of growth rate (0.1609 against 0.1653). Per hexose that
+is half the cost of proton-coupled glucose uptake, because one symport event
+carries two hexose units — which is the standard energetic argument for
+cellobiose co-fermentation.
+
+### What Part C deliberately does not do
+
+**It does not rank transporters.** Yeast9 has no affinities, so any two
+cellobiose transporters with the same stoichiometry yield an identical
+prediction: the 17 cellobiose and cellodextrin transporters compiled in Xu et
+al. (2024) Table S1 would produce 17 identical rows. That is a limitation of
+flux-balance analysis, not a shortcut taken here. The question a genome-scale
+model can answer is whether transport alone suffices or a pathway is missing
+too — which is exactly what the platform strain tests.
+
+`data/cellobiose_constructs.csv` additionally records that GH1-1 hydrolyses
+lactose (Liu et al. 2016). **That is not modelled in this repository**; it is
+recorded as a documented possible extension only.
+
 ## A hypothesis raised and withdrawn
 
 Early in the work, de Valk's ethanol/glycerol plate was read as two separate
@@ -224,6 +318,21 @@ Yeast9 worth naming, and because a withdrawn hypothesis belongs in the record.
   derived from the model, but no such organism exists.
 - **Part B is a demonstration, not a validation.** Three porters, one host, a
   qualitative readout.
+- **FBA cannot rank transporters of the same substrate.** Without affinities,
+  two transporters with identical stoichiometry give identical predictions, so
+  no conclusion in this repository distinguishes one cellobiose transporter from
+  another. Published Km values exist for some of them and are not used, because
+  nothing in flux-balance analysis consumes them.
+- **CtA's transport mechanism is assumed.** The source does not state whether
+  uptake is proton-coupled; both variants are reported, and they differ in
+  predicted rate but not in growth/no-growth.
+- **The cellobiose pools are our addition.** Cellobiose does not exist in
+  Yeast9, so Part C extends the model rather than querying it. Results from an
+  extended model are evidence about the extension, not about Yeast9 as
+  published — the same caveat as the mannitol extension in Part B.
+- **Part C's comparison is with design expectation, not with a measurement.**
+  The 7/7 records that each strain behaved as the construct logic predicts; no
+  cellobiose growth experiment from this strain is being reproduced.
 - **Uptake bounds.** Yeast9's own default bound (1 mmol gDW⁻¹ h⁻¹) is applied to
   whichever carbon source is open, so no uptake rate is invented. Growth/no-growth
   conclusions do not depend on it; predicted rates do.
@@ -235,16 +344,18 @@ Yeast9 worth naming, and because a withdrawn hypothesis belongs in the record.
 │   ├── model/MODEL_PROVENANCE.json    # pinned Yeast9 release, commit, checksum
 │   ├── imk1010_deleted_genes.csv      # the 32 deleted genes, with sources
 │   ├── published_phenotypes.csv       # growth phenotypes from both papers
-│   └── nummela2026_glp.csv            # Glp substrate specificity
+│   ├── nummela2026_glp.csv            # Glp substrate specificity
+│   └── cellobiose_constructs.csv      # NcBGL and CtA, with accessions and citations
 ├── src/imk1010_gem/
 │   ├── model_io.py                    # loading Yeast9; recovering gene names
 │   ├── media.py                       # minimal medium with one carbon source
 │   ├── strains.py                     # IMK1010 and the repaired diagnostic
 │   ├── porters.py                     # adding the Glp porters
+│   ├── cellobiose.py                  # the cellobiose platform strain
 │   └── analysis.py                    # growth panels and comparison tables
-├── scripts/                           # download_model, run_part_a, run_part_b, make_figures
+├── scripts/                           # download_model, run_part_a/b/c, make_figures
 ├── results/                           # generated CSVs and figures
-└── tests/                             # 34 tests
+└── tests/                             # 44 tests
 ```
 
 The tests assert the *disagreements* explicitly as well as the agreements, so

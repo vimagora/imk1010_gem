@@ -83,17 +83,26 @@ All data are from published work. No unpublished data are used.
 
 | Source | Used for | Licence |
 |---|---|---|
-| **de Valk SC, Bouwmeester SE, de Hulster E, Mans R (2022).** *Biotechnology for Biofuels and Bioproducts.* PMCID [PMC9077909](https://www.ncbi.nlm.nih.gov/pmc/articles/PMC9077909/) | IMK1010 genotype, the 32 deleted genes, growth phenotypes (Fig. 2) | CC BY 4.0 (article); CC0 (data) |
-| **Wijsman M et al. (2019).** *FEMS Yeast Research.* | Cross-check of the Hxt0 (IMX1812) hexose-transporter gene list | CC BY-NC-ND 4.0 — facts only; no tables or figures reproduced here |
-| **Nummela et al. (2026).** | GlpA/GlpB/GlpC substrate specificity in IMK1010 (Fig. 4) | CC BY 4.0 |
-| **Xu L et al. (2024).** *Bioresource Technology* 391:130006. | Context on characterised fungal sugar transporters | Open access, Creative Commons (specific variant not confirmed) |
-| **Galagan J, Calvo S, Borkovich K et al. (2003).** *Nature* 422:859–868. [doi:10.1038/nature01554](https://doi.org/10.1038/nature01554) | *N. crassa* genome; prediction of NCU00130 | — |
-| **Galazka JM et al. (2010).** *Science* 330:84–86. [doi:10.1126/science.1192838](https://doi.org/10.1126/science.1192838) | Characterisation of the intracellular β-glucosidase GH1-1 used as `NcBGL` | — |
-| **Lin H, Zhao J, Zhang Q, Cui S, Fan Z, Chen H, Tian C (2020).** *Frontiers in Microbiology* 11:145. [doi:10.3389/fmicb.2020.00145](https://doi.org/10.3389/fmicb.2020.00145) | Characterisation of the *A. niger* cellodextrin transporter CtA | — |
+| **de Valk SC, Bouwmeester SE, de Hulster E, Mans R (2022).** *Biotechnology for Biofuels and Bioproducts.* [doi:10.1186/s13068-022-02145-7](https://doi.org/10.1186/s13068-022-02145-7) | IMK1010 genotype, the 32 deleted genes, growth phenotypes (Fig. 2) | CC BY 4.0 |
+| **Wijsman M et al. (2019).** *FEMS Yeast Research.* [doi:10.1093/femsyr/foy107](https://doi.org/10.1093/femsyr/foy107) | Cross-check of the Hxt0 (IMX1812) hexose-transporter gene list | CC BY-NC-ND 4.0 |
+| **Nummela et al. (2026).** *Applied Microbiology and Biotechnology* [doi:10.1007/s00253-026-13854-6](https://doi.org/10.1007/s00253-026-13854-6) | GlpA/GlpB/GlpC substrate specificity in IMK1010 (Fig. 4) | CC BY 4.0 |
+| **Xu L et al. (2024).** *Bioresource Technology.* [doi:10.1016/j.biortech.2023.130006](https://doi.org/10.1016/j.biortech.2023.130006) | Context on characterised fungal sugar transporters | CC BY 4.0 |
+| **Galagan J, Calvo S, Borkovich K et al. (2003).** *Nature.* [doi:10.1038/nature01554](https://doi.org/10.1038/nature01554) | *N. crassa* genome; prediction of NCU00130 | [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/) |
+| **Galazka JM et al. (2010).** *Science* 330:84–86. [doi:10.1126/science.1192838](https://doi.org/10.1126/science.1192838) | Characterisation of the intracellular β-glucosidase GH1-1 used as `NcBGL` | AAAS default licence — not open access; public access via CHORUS after a 12-month embargo |
+| **Lin H, Zhao J, Zhang Q, Cui S, Fan Z, Chen H, Tian C (2020).** *Frontiers in Microbiology* 11:145. [doi:10.3389/fmicb.2020.00145](https://doi.org/10.3389/fmicb.2020.00145) | Characterisation of the *A. niger* cellodextrin transporter CtA | CC BY 4.0 |
 | **Liu JJ, Zhang GC, Oh EJ, Pathanibul P, Turner TL, Jin YS (2016).** *Journal of Biotechnology* 234:99–104. [doi:10.1016/j.jbiotec.2016.07.018](https://doi.org/10.1016/j.jbiotec.2016.07.018), PMID 27457698 | Confirms GH1-1 lactose activity (recorded in `data/`, not modelled here) | — |
 | **Yeast9** — SysBioChalmers/yeast-GEM | The metabolic model | see repository |
 
 The repository owner is a co-author of Xu et al. (2024).
+
+**On the restrictive licences.** Three sources are not openly licensed: Wijsman
+et al. (CC BY-NC-ND 4.0), Galagan et al. (CC BY-NC-SA 3.0) and Galazka et al.
+(AAAS, subscription). Nothing in this repository reproduces their text, tables
+or figures. What is used from them is factual — gene identifiers, accession
+numbers, a subcellular localisation, a published growth call — and facts are not
+subject to copyright. Share-alike therefore does not propagate: the code here
+remains under the MIT licence, and the data files carry their own sources'
+terms, recorded per row.
 
 Derived data files in `data/` record the `source_paper` and `source_location`
 (figure or table) for every value, so each number can be traced to its origin.

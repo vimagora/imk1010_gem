@@ -84,3 +84,54 @@ def test_mannitol_gap_is_transport_not_pathway(background):
     with extended as strain:
         porters.add_mannitol_porter(strain, "GlpA")
         assert analysis.grows(analysis.growth_on(strain, "Mannitol"))
+
+
+# --- the published negatives, which are what make Part B informative ---------
+
+
+def test_glpa_and_glpb_hexose_results_are_published_negatives():
+    """Tested and did not grow -- not 'unreported'.
+
+    Encoding these as absent results would hide the discriminating half of
+    Part B: a model that said yes to every added transporter would score all
+    the positives and none of these.
+    """
+    import csv
+
+    with open(porters.GLP_CSV, newline="", encoding="utf-8") as handle:
+        rows = list(csv.DictReader(handle))
+    for porter in ["GlpA", "GlpB"]:
+        for sugar in ["D-glucose", "D-fructose", "D-mannose"]:
+            match = [r for r in rows if r["porter"] == porter and r["substrate"] == sugar]
+            assert len(match) == 1, f"{porter}/{sugar}"
+            assert match[0]["transported"] == "no"
+
+
+def test_galactose_was_carried_by_no_porter():
+    import csv
+
+    with open(porters.GLP_CSV, newline="", encoding="utf-8") as handle:
+        rows = [r for r in csv.DictReader(handle) if r["substrate"] == "D-galactose"]
+    assert len(rows) == 3
+    assert all(r["transported"] == "no" for r in rows)
+
+
+def test_ethanol_is_the_published_positive_control():
+    """Every strain grew on ethanol, which is what shows the strains were viable."""
+    import csv
+
+    with open(porters.GLP_CSV, newline="", encoding="utf-8") as handle:
+        rows = [r for r in csv.DictReader(handle) if r["substrate"] == "ethanol"]
+    assert len(rows) == 3
+    assert all(r["transported"] == "yes" for r in rows)
+
+
+def test_panel_contains_both_positives_and_negatives():
+    """A panel of only positives could be matched by a trivially permissive model."""
+    import csv
+
+    with open(porters.GLP_CSV, newline="", encoding="utf-8") as handle:
+        calls = [r["transported"] for r in csv.DictReader(handle)]
+    assert calls.count("yes") == 18
+    assert calls.count("no") == 9
+    assert "not reported" not in calls

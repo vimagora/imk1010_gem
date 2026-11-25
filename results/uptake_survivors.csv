@@ -6,6 +6,7 @@ D-mannitol,,,,n/a - absent from Yeast9
 D-mannose,D-mannose,r_1139,HXT17,no
 D-sorbitol,D-glucitol,r_1717,HXT17,no
 D-xylitol,xylitol,r_2105,FPS1,no
+ethanol,ethanol,r_1762,(no gene rule: passive diffusion),no
 ethanol + glycerol,ethanol,r_1762,(no gene rule: passive diffusion),no
 ethanol + glycerol,glycerol,r_1171,"GUP1, GUP2",no
 glycerol,glycerol,r_1171,"GUP1, GUP2",no

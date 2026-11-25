@@ -16,3 +16,5 @@ IMK1010 + HXT5,positive control,D-glucose,8,%,,solid medium,6,Nummela2026,Fig. 4
 IMK1010 + HXT5,positive control,D-fructose,8,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
 IMK1010 + HXT5,positive control,D-mannose,2,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
 IMK1010 + HXT5,positive control,glycerol,1,%,,solid medium,6,Nummela2026,Fig. 4,,NEEDED: which substrates did the HXT5 positive control grow on?
+IMK1010 + empty vector,negative control,ethanol,2,% v/v,yes,solid medium,6,Nummela2026,Fig. 4,yes,positive control: the strain is viable
+IMK1010 + empty vector,negative control,D-galactose,,,no,solid medium,6,Nummela2026,Fig. 4,yes,

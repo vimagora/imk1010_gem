@@ -259,9 +259,9 @@ recorded as a documented possible extension only.
   Oxygen limitation in liquid culture would be a tempting explanation, since
   glycerol and the polyols are non-fermentable and require respiration — but
   every strain also grew on ethanol, which is likewise non-fermentable, so that
-  explanation does not hold. We cannot account for the difference.
+  explanation does not hold. I cannot account for the difference.
 - **Changing the growth condition is substantial work, not a flag.** While
-  comparing proton symport against facilitated transport in Part C, we attempted
+  comparing proton symport against facilitated transport in Part C, I attempted
   the same comparison anaerobically, where the ATP cost of symport should matter
   far more. Yeast9 would not grow anaerobically at all, even with sterols and
   unsaturated fatty acids supplemented, so no anaerobic number is reported. That

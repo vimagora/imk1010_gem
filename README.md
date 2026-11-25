@@ -25,8 +25,9 @@ in the model's gene–protein–reaction rules.
    from both papers. The genes to delete are **derived from the model's own gene
    rules**, not chosen by hand.
 3. Adding the Glp porters to that background reproduces the published substrate
-   specificity, including the part that discriminates between porters: GlpA and
-   GlpB do not restore growth on hexoses, GlpC does.
+   specificity across both published positives and published negatives: GlpA and
+   GlpB do not restore growth on D-glucose, D-fructose or D-mannose, GlpC does,
+   and no porter restores growth on D-galactose.
 4. **Yeast9 cannot represent mannitol uptake at all**, although it carries the
    mannitol catabolic step. The gap is transport, not pathway.
 5. For cellobiose, by contrast, **transport is not sufficient**: a hydrolase is
@@ -46,7 +47,8 @@ python scripts/run_part_a.py             # -> results/carbon_panel.csv, uptake_s
 python scripts/run_part_b.py             # -> results/glp_predictions.csv
 python scripts/run_part_c.py             # -> results/cellobiose_panel.csv
 python scripts/make_figures.py           # -> results/figures/
-pytest                                   # 44 tests
+python scripts/verify_readme.py          # re-derives every number in this file
+pytest                                   # 48 tests
 ```
 
 The SBML file is about 12 MB and is therefore **not** committed. It is fetched by
@@ -142,20 +144,30 @@ than a broken reconstruction.
 
 | Strain | vs de Valk 2022 | vs Nummela 2026 (empty vector) |
 |---|---|---|
-| IMK1010 (faithful) | 4/6 | **0/6** |
-| IMK1010 (repaired) | 6/6 | 6/6 |
+| trivial predictor: "nothing grows" | 5/6 | 7/8 |
+| IMK1010 (faithful) | 4/6 | **2/8** |
+| IMK1010 (repaired) | **6/6** | **8/8** |
 
-**These ratios should not be read as accuracy scores.** Most published values are
-"no growth", so a trivial predictor that said "nothing grows" would score 5/6
-against de Valk and 6/6 against Nummela. The faithful model scores 0/6 against
-Nummela — worse than the trivial predictor. What matters is not the ratio but
-that every failure has a single named cause, and that the cause is structural:
-gene rules record which genes *can* catalyse a reaction, never which combinations
-are sufficient to abolish it.
+**Read these against the trivial predictor, not as raw accuracy.** Most published
+values are "no growth", so a model that never predicted growth would score 5/6
+against de Valk and 7/8 against Nummela. Both panels do contain one published
+positive — de Valk's combined ethanol + glycerol plate, and ethanol in Nummela's
+panel — so neither baseline is perfect, but both are high.
+
+Against that baseline the faithful model does **worse than predicting nothing**:
+4/6 and 2/8. The repaired model beats it on both, 6/6 and 8/8. What matters more
+than either ratio is that every failure has a single named cause, and that the
+cause is structural: gene rules record which genes *can* catalyse a reaction,
+never which combinations are sufficient to abolish it.
+
+The faithful model's 2/8 against Nummela is not quite zero because it gets
+**ethanol** and **D-galactose** right — ethanol needs no sugar transporter at
+all, and the galactose rule contains no retained gene. Everything that depends on
+a retained transporter fails.
 
 The two panels differ only in which substrates each paper tested. de Valk's panel
 includes disaccharides and galactose, whose rules contain no retained genes, so
-the faithful model gets those right. Nummela's panel is entirely hexoses and
+the faithful model gets those right. Nummela's panel is mostly hexoses and
 polyols, which is where every retained gene sits.
 
 **Positive control.** Nummela et al. used HXT5-expressing IMK1010 as a positive
@@ -173,19 +185,26 @@ of these substrates, so no porter could show an effect.
 
 ![Figure 2](results/figures/figure2_part_b_glp_porters.png)
 
-Of the 15 published porter–substrate pairs, 12 are representable in Yeast9 and
-all 12 are reproduced.
+Of the 27 published porter–substrate pairs, 24 are representable in Yeast9, and
+the model reproduces **24/24** of them: **15/15 where the paper reports growth,
+and 9/9 where it reports none.** The 3 excluded pairs are D-mannitol, which
+Yeast9 cannot represent at all (see below).
 
-**The 12/12 is not the informative part.** Adding a transporter for a substrate
-the model can already catabolise will of course produce growth. What is
-informative is the negative half: **GlpA and GlpB do not restore growth on
-D-glucose, D-fructose or D-mannose, while GlpC does**, matching the published
-specificity. If the substrate assignments were wrong, that asymmetry would
-collapse.
+**The negatives are what make this a test.** Adding a transporter for a substrate
+the model can already catabolise will of course produce growth, so the 15
+positives on their own would be weak evidence — a model that simply said "yes" to
+every added transporter would score all 15. It would also score **none** of the
+9 negatives. The panel discriminates because it contains both.
 
-Note that "not reported" in Figure 2 is not evidence of absence: Nummela et al.
-report no result for GlpA/GlpB on the hexoses, and the figure distinguishes that
-from a reported negative.
+The discriminating result is that **GlpA and GlpB do not restore growth on
+D-glucose, D-fructose or D-mannose, while GlpC does**, and that **no porter
+restores growth on D-galactose**. Those are published negatives — the strains
+were tested and did not grow — so agreeing with them is a result, not an absence
+of one. If the substrate assignments were wrong, that asymmetry would collapse.
+
+**Ethanol is the published positive control.** Every strain grew on it, including
+the empty-vector control, which is what shows the strains were viable and that a
+"no growth" elsewhere in the panel is a measurement rather than a dead culture.
 
 ### The mannitol gap
 
@@ -308,6 +327,26 @@ Yeast9 worth naming, and because a withdrawn hypothesis belongs in the record.
 - **Growth on a plate is not a growth rate.** The published readouts are
   growth/no-growth after 2–8 days. The predicted rates in the results files are
   therefore not comparable to anything measured, and no such comparison is made.
+- **FBA has no notion of culture format, and the two published formats
+  disagree.** Nummela et al. also report liquid cultures, in which the porters
+  did *not* restore growth on glycerol or the polyols. This project models and
+  compares against the **solid** readout only, because that is what the substrate
+  specificity claims rest on. A flux-balance model has no colony, no gradient, no
+  suspension and no local concentration, so it cannot represent the difference
+  between the two; it can only be compared against one of them. The mismatch is
+  reported here rather than resolved.
+
+  Oxygen limitation in liquid culture would be a tempting explanation, since
+  glycerol and the polyols are non-fermentable and require respiration — but
+  every strain also grew on ethanol, which is likewise non-fermentable, so that
+  explanation does not hold. We cannot account for the difference.
+- **Changing the growth condition is substantial work, not a flag.** While
+  comparing proton symport against facilitated transport in Part C, we attempted
+  the same comparison anaerobically, where the ATP cost of symport should matter
+  far more. Yeast9 would not grow anaerobically at all, even with sterols and
+  unsaturated fatty acids supplemented, so no anaerobic number is reported. That
+  and the solid/liquid mismatch are the same lesson: the model is configured for
+  one assumed condition.
 - **Strain background.** Yeast9 is built on S288C; IMK1010 derives from CEN.PK.
   Three of the 32 deleted genes (HXT12, MAL21, MAL22) are absent from the model.
 - **Transport stoichiometry for the Glp porters is an assumption.** Nummela et
@@ -353,14 +392,19 @@ Yeast9 worth naming, and because a withdrawn hypothesis belongs in the record.
 │   ├── porters.py                     # adding the Glp porters
 │   ├── cellobiose.py                  # the cellobiose platform strain
 │   └── analysis.py                    # growth panels and comparison tables
-├── scripts/                           # download_model, run_part_a/b/c, make_figures
+├── scripts/                           # download_model, run_part_a/b/c,
+│                                      # make_figures, verify_readme
 ├── results/                           # generated CSVs and figures
-└── tests/                             # 44 tests
+└── tests/                             # 48 tests
 ```
 
 The tests assert the *disagreements* explicitly as well as the agreements, so
 that a future change which quietly makes a known failure disappear will fail the
 suite rather than pass silently.
+
+`scripts/verify_readme.py` re-derives every number in this README from the
+committed result files and exits non-zero if any has drifted, so the prose cannot
+fall out of step with the analysis unnoticed.
 
 ## Licence
 

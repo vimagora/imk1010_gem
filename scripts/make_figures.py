@@ -81,7 +81,7 @@ ROW_ORDER = [
     "D-glucose", "D-fructose", "D-mannose", "D-galactose",
     "sucrose", "maltose",
     "D-sorbitol", "D-xylitol", "D-mannitol",
-    "glycerol", "ethanol + glycerol",
+    "glycerol", "ethanol", "ethanol + glycerol",
 ]
 
 CELL = 0.86  # cell size, leaving a surface gap between cells
@@ -175,8 +175,12 @@ def _frame(ax, columns: list[str], rows: list[str], title: str, subtitle: str,
     ax.set_facecolor(SURFACE)
 
     page_left = ("figure fraction", "axes fraction")
+    # The subtitle is anchored by its bottom, so a multi-line subtitle grows
+    # upward into the title. Lift the title by one line height per extra line.
+    extra_lines = subtitle.count("\n")
     ax.annotate(title, xy=(0.03, 1), xycoords=page_left,
-                xytext=(0, header_offset + 16), textcoords="offset points",
+                xytext=(0, header_offset + 16 + 12 * extra_lines),
+                textcoords="offset points",
                 fontsize=10.5, fontweight="bold", color=INK,
                 ha="left", va="bottom", annotation_clip=False)
     ax.annotate(subtitle, xy=(0.03, 1), xycoords=page_left,
@@ -197,13 +201,22 @@ def _frame(ax, columns: list[str], rows: list[str], title: str, subtitle: str,
                     solid_capstyle="butt")
 
 
-def legend_handles(include_disagreement: bool = True) -> list:
+def legend_handles(include_disagreement: bool = True,
+                   states: list[str] | None = None) -> list:
+    """Legend entries for the states a figure actually uses.
+
+    A state that does not occur in the matrix is left out: listing
+    "not reported" under a figure with no unreported cells invites the reader
+    to go looking for one.
+    """
     labels = {
         "yes": "growth",
         "no": "no growth",
         "not reported": "not reported in the paper",
         "not representable": "not representable in Yeast9",
     }
+    if states is not None:
+        labels = {k: v for k, v in labels.items() if k in states}
     handles = []
     for state, label in labels.items():
         fill, glyph, _, hatch = STATES[state]
@@ -230,7 +243,9 @@ def figure_part_a(panel: pd.DataFrame) -> pathlib.Path:
     strains = ["wild type", "IMK1010", "IMK1010 repaired"]
     sources = [
         ("de Valk et al. 2022", "deValk2022", "IMK1010 (Sugar0) on SM plates"),
-        ("Nummela et al. 2026", "Nummela2026", "IMK1010 + empty vector, solid medium"),
+        ("Nummela et al. 2026", "Nummela2026",
+         "IMK1010 + empty vector, solid medium.  Ethanol is the published positive\n"
+         "control: the strain grew, so a 'no growth' elsewhere is a result, not a dead culture."),
     ]
 
     # Row counts differ between panels, so size each panel by its own rows and
@@ -243,10 +258,12 @@ def figure_part_a(panel: pd.DataFrame) -> pathlib.Path:
         ]
 
     heights = [len(subsets[p]) for _, p, _ in sources]
-    fig = plt.figure(figsize=(7.6, 8.8), facecolor=SURFACE)
+    fig = plt.figure(figsize=(8.4, 9.4), facecolor=SURFACE)
+    # The right margin leaves room for the positive-control marker beside the
+    # ethanol row; without it the annotation runs off the page.
     grid = fig.add_gridspec(
-        2, 1, height_ratios=heights, hspace=0.62,
-        left=0.24, right=0.94, top=0.80, bottom=0.13,
+        2, 1, height_ratios=heights, hspace=0.78,
+        left=0.23, right=0.82, top=0.80, bottom=0.12,
     )
 
     columns = ["published"] + strains
@@ -289,6 +306,17 @@ def figure_part_a(panel: pd.DataFrame) -> pathlib.Path:
                     disagrees = verdict == "DISAGREES"
                 draw_cell(ax, col_index, row_index, state, disagrees)
 
+            # Mark the published positives. A panel of nothing but "no growth"
+            # could be matched by a model that never predicts growth, so where
+            # the published column says yes is worth pointing at.
+            if _state_of(table.loc[substrate, f"[{paper}] published"]) == "yes":
+                ax.annotate(
+                    "published\npositive", xy=(len(columns) - 0.26, row_index),
+                    xycoords="data", ha="left", va="center", fontsize=7.5,
+                    color=GROWTH, fontweight="bold", linespacing=1.4,
+                    annotation_clip=False,
+                )
+
     fig.text(0.03, 0.975, "Figure 1  Predicted vs published growth of IMK1010 in Yeast9",
              fontsize=12, fontweight="bold", color=INK, va="top", ha="left")
     fig.text(
@@ -297,8 +325,14 @@ def figure_part_a(panel: pd.DataFrame) -> pathlib.Path:
         "(HXT17, CIN10, GUP1/GUP2, FPS1), derived from the model's own rules. It exists in no laboratory.",
         fontsize=8.5, color=INK_SECONDARY, va="top", ha="left", linespacing=1.5,
     )
+    used = {"yes", "no"}
+    for _, paper, _ in sources:
+        table = subsets[paper]
+        for strain in strains:
+            used |= {_state_of(v) for v in table[f"{strain} grows"]}
     fig.legend(
-        handles=legend_handles(), loc="lower left", bbox_to_anchor=(0.03, 0.012),
+        handles=legend_handles(states=sorted(used)), loc="lower left",
+        bbox_to_anchor=(0.03, 0.012),
         frameon=False, fontsize=8.5, ncol=2, handletextpad=0.6,
         columnspacing=2.0, labelcolor=INK_SECONDARY,
     )
@@ -347,29 +381,39 @@ def figure_part_b(table: pd.DataFrame) -> pathlib.Path:
         bottom = rows.index(hexoses[-1]) + 0.5
         ax.plot([-1.78, -1.78], [top, bottom], color=CRITICAL, linewidth=2.2,
                 clip_on=False, solid_capstyle="butt")
+        # Not "hexoses": D-galactose is a hexose too and no porter carried it,
+        # so naming the sugar class here would be wrong by one row.
         ax.annotate(
-            "hexoses:\nGlpC only", xy=(-1.88, (top + bottom) / 2),
+            "carried by\nGlpC only", xy=(-1.88, (top + bottom) / 2),
             ha="right", va="center", fontsize=8.5, color=CRITICAL,
             fontweight="bold", annotation_clip=False, linespacing=1.5,
         )
 
-    claimed = table[table["published"] == "yes"]
-    scoreable = claimed[claimed["predicted"] != "not representable"]
+    scoreable = table[table["verdict"].isin(["agrees", "DISAGREES"])]
     n_agree = (scoreable["verdict"] == "agrees").sum()
+    positives = scoreable[scoreable["published"] == "yes"]
+    negatives = scoreable[scoreable["published"] == "no"]
+    excluded = table[table["verdict"] == "not representable"]
 
     fig.text(0.03, 0.975,
              "Figure 2  Aspergillus niger Glp porters added to IMK1010 in silico",
              fontsize=12, fontweight="bold", color=INK, va="top", ha="left")
     fig.text(
         0.03, 0.945,
-        f"Of {len(claimed)} published porter-substrate pairs, {len(scoreable)} are representable in Yeast9 "
-        f"and {n_agree} are reproduced.\n"
-        "The informative half is negative: GlpA and GlpB do not restore hexose growth, GlpC does.\n"
-        "\"Not reported\" is not evidence of absence — the paper reports no result for those pairs.",
-        fontsize=8.5, color=INK_SECONDARY, va="top", ha="left",
+        f"{n_agree}/{len(scoreable)} published porter-substrate pairs reproduced: "
+        f"{(positives['verdict'] == 'agrees').sum()}/{len(positives)} where the paper reports growth, "
+        f"{(negatives['verdict'] == 'agrees').sum()}/{len(negatives)} where it reports none.\n"
+        "The negatives are what make this a test: a model that said yes to every added transporter\n"
+        f"would score all {len(positives)} positives and none of the {len(negatives)} negatives. "
+        f"{len(excluded)} pairs are excluded as not representable.",
+        fontsize=8.5, color=INK_SECONDARY, va="top", ha="left", linespacing=1.5,
     )
+    used = {_state_of(v) for v in table["published"]} | {
+        _state_of(v) for v in table["predicted"]
+    }
     fig.legend(
-        handles=legend_handles(include_disagreement=False), loc="lower left",
+        handles=legend_handles(include_disagreement=False, states=sorted(used)),
+        loc="lower left",
         bbox_to_anchor=(0.03, 0.012), frameon=False, fontsize=8.5, ncol=2,
         handletextpad=0.6, columnspacing=2.0, labelcolor=INK_SECONDARY,
     )

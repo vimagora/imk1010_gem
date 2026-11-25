@@ -10,9 +10,7 @@ growth phenotypes, then asks whether adding three *Aspergillus niger*
 glycerol/polyol transporters (GlpA, GlpB, GlpC) restores growth in the model in
 the same pattern reported experimentally, and finally builds a cellobiose
 platform strain to ask a question the first two parts cannot: what happens when
-a transporter is *not* enough on its own. The headline result is a negative one:
-the genotype-faithful reconstruction fails, for a specific and traceable reason
-in the model's gene–protein–reaction rules.
+a transporter is *not* enough on its own.
 
 ## Summary of findings
 
@@ -51,10 +49,9 @@ python scripts/verify_readme.py          # re-derives every number in this file
 pytest                                   # 48 tests
 ```
 
-The SBML file is about 12 MB and is therefore **not** committed. It is fetched by
-`scripts/download_model.py`, which verifies the checksum and refuses to keep a
-file that does not match, so a clean clone runs against exactly the model
-documented below.
+The SBML file is fetched by `scripts/download_model.py`, which verifies the
+checksum and refuses to keep a file that does not match, so a clean clone
+runs against exactly the model documented below.
 
 ## Model version
 
@@ -70,13 +67,6 @@ documented below.
 
 Recorded in `data/model/MODEL_PROVENANCE.json`. Solver: GLPK via optlang.
 
-A practical note on the model: Yeast9 stores each gene's systematic ORF name as
-the SBML gene product ID and its common name in the `fbc:label` attribute, which
-COBRApy does not expose — `gene.name` comes back empty. Since the published gene
-lists are written in common names, `model_io.py` parses those labels out of the
-SBML, so the `HXT1` → `YHR094C` mapping comes from the model file itself rather
-than from an external assumption.
-
 ## Data sources
 
 All data are from published work. No unpublished data are used.
@@ -87,32 +77,25 @@ All data are from published work. No unpublished data are used.
 | **Wijsman M et al. (2019).** *FEMS Yeast Research.* [doi:10.1093/femsyr/foy107](https://doi.org/10.1093/femsyr/foy107) | Cross-check of the Hxt0 (IMX1812) hexose-transporter gene list | CC BY-NC-ND 4.0 |
 | **Nummela et al. (2026).** *Applied Microbiology and Biotechnology* [doi:10.1007/s00253-026-13854-6](https://doi.org/10.1007/s00253-026-13854-6) | GlpA/GlpB/GlpC substrate specificity in IMK1010 (Fig. 4) | CC BY 4.0 |
 | **Xu L et al. (2024).** *Bioresource Technology.* [doi:10.1016/j.biortech.2023.130006](https://doi.org/10.1016/j.biortech.2023.130006) | Context on characterised fungal sugar transporters | CC BY 4.0 |
-| **Galagan J, Calvo S, Borkovich K et al. (2003).** *Nature.* [doi:10.1038/nature01554](https://doi.org/10.1038/nature01554) | *N. crassa* genome; prediction of NCU00130 | [CC BY-NC-SA 3.0](https://creativecommons.org/licenses/by-nc-sa/3.0/) |
+| **Galagan J, Calvo S, Borkovich K et al. (2003).** *Nature.* [doi:10.1038/nature01554](https://doi.org/10.1038/nature01554) | *N. crassa* genome; prediction of NCU00130 | CC BY-NC-SA 3.0 |
 | **Galazka JM et al. (2010).** *Science* 330:84–86. [doi:10.1126/science.1192838](https://doi.org/10.1126/science.1192838) | Characterisation of the intracellular β-glucosidase GH1-1 used as `NcBGL` | AAAS default licence — not open access; public access via CHORUS after a 12-month embargo |
 | **Lin H, Zhao J, Zhang Q, Cui S, Fan Z, Chen H, Tian C (2020).** *Frontiers in Microbiology* 11:145. [doi:10.3389/fmicb.2020.00145](https://doi.org/10.3389/fmicb.2020.00145) | Characterisation of the *A. niger* cellodextrin transporter CtA | CC BY 4.0 |
 | **Liu JJ, Zhang GC, Oh EJ, Pathanibul P, Turner TL, Jin YS (2016).** *Journal of Biotechnology* 234:99–104. [doi:10.1016/j.jbiotec.2016.07.018](https://doi.org/10.1016/j.jbiotec.2016.07.018), PMID 27457698 | Confirms GH1-1 lactose activity (recorded in `data/`, not modelled here) | — |
 | **Yeast9** — SysBioChalmers/yeast-GEM | The metabolic model | see repository |
 
-The repository owner is a co-author of Xu et al. (2024).
-
 **On the restrictive licences.** Three sources are not openly licensed: Wijsman
 et al. (CC BY-NC-ND 4.0), Galagan et al. (CC BY-NC-SA 3.0) and Galazka et al.
 (AAAS, subscription). Nothing in this repository reproduces their text, tables
-or figures. What is used from them is factual — gene identifiers, accession
-numbers, a subcellular localisation, a published growth call — and facts are not
-subject to copyright. Share-alike therefore does not propagate: the code here
-remains under the MIT licence, and the data files carry their own sources'
-terms, recorded per row.
+or figures. The code here remains under the MIT licence, and the data files
+carry their own sources' terms, recorded per row.
 
 Derived data files in `data/` record the `source_paper` and `source_location`
-(figure or table) for every value, so each number can be traced to its origin.
-`data/published_phenotypes.csv` additionally flags rows that were *inferred from
-the assay design* rather than stated outright in the source.
+(figure or table) for every value.
 
 ## Part A — reconstructing IMK1010
 
-29 of the 32 published genes map onto Yeast9. The three that do not — **HXT12,
-MAL21 and MAL22** — are a genuine strain-background difference: Yeast9 is built
+29 of the 32 published genes map onto Yeast9. **HXT12,
+MAL21 and MAL22** are a strain-background difference: Yeast9 is built
 on S288C, whereas IMK1010 derives from CEN.PK and carries the CEN.PK-specific
 `MAL2-8C` allele.
 
@@ -157,12 +140,6 @@ than a broken reconstruction.
 | IMK1010 (faithful) | 4/6 | **2/8** |
 | IMK1010 (repaired) | **6/6** | **8/8** |
 
-**Read these against the trivial predictor, not as raw accuracy.** Most published
-values are "no growth", so a model that never predicted growth would score 5/6
-against de Valk and 7/8 against Nummela. Both panels do contain one published
-positive — de Valk's combined ethanol + glycerol plate, and ethanol in Nummela's
-panel — so neither baseline is perfect, but both are high.
-
 Against that baseline the faithful model does **worse than predicting nothing**:
 4/6 and 2/8. The repaired model beats it on both, 6/6 and 8/8. What matters more
 than either ratio is that every failure has a single named cause, and that the
@@ -170,7 +147,7 @@ cause is structural: gene rules record which genes *can* catalyse a reaction,
 never which combinations are sufficient to abolish it.
 
 The faithful model's 2/8 against Nummela is not quite zero because it gets
-**ethanol** and **D-galactose** right — ethanol needs no sugar transporter at
+**ethanol** and **D-galactose** right: ethanol needs no sugar transporter at
 all, and the galactose rule contains no retained gene. Everything that depends on
 a retained transporter fails.
 
@@ -197,23 +174,7 @@ of these substrates, so no porter could show an effect.
 Of the 27 published porter–substrate pairs, 24 are representable in Yeast9, and
 the model reproduces **24/24** of them: **15/15 where the paper reports growth,
 and 9/9 where it reports none.** The 3 excluded pairs are D-mannitol, which
-Yeast9 cannot represent at all (see below).
-
-**The negatives are what make this a test.** Adding a transporter for a substrate
-the model can already catabolise will of course produce growth, so the 15
-positives on their own would be weak evidence — a model that simply said "yes" to
-every added transporter would score all 15. It would also score **none** of the
-9 negatives. The panel discriminates because it contains both.
-
-The discriminating result is that **GlpA and GlpB do not restore growth on
-D-glucose, D-fructose or D-mannose, while GlpC does**, and that **no porter
-restores growth on D-galactose**. Those are published negatives — the strains
-were tested and did not grow — so agreeing with them is a result, not an absence
-of one. If the substrate assignments were wrong, that asymmetry would collapse.
-
-**Ethanol is the published positive control.** Every strain grew on it, including
-the empty-vector control, which is what shows the strains were viable and that a
-"no growth" elsewhere in the panel is a measurement rather than a dead culture.
+Yeast9 cannot represent at all.
 
 ### The mannitol gap
 
@@ -222,28 +183,15 @@ extracellular mannitol pool and no mannitol exchange reaction**, so no strain ca
 take mannitol up under any circumstances. The catabolic step is present:
 `r_4183`, mannitol + NAD⁺ ⇌ D-fructose + NADH (`DSF1 or MAN2`).
 
-Adding only the uptake side — an extracellular metabolite, an exchange reaction
-and a transport reaction — restores growth for all three porters (0.0867 h⁻¹).
-**The gap in Yeast9 is therefore transport, not pathway.** This extension goes
-beyond what Yeast9 ships; it is applied to a separate, labelled strain and
-reported as an extension, never folded into the main results.
-
 ## Part C — a cellobiose platform strain
-
-Parts A and B both ask the same question: is transport the missing step? For
-every substrate there, the answer is yes — open the uptake route and the model
-grows. Cellobiose is the case where that is not true.
 
 *S. cerevisiae* has neither a cellobiose transporter nor a β-glucosidase, so
 **two** things are missing, and which one limits growth is the experiment. The
 platform strain supplies only the enzyme: IMK1010 (repaired) carrying an
 intracellular β-glucosidase, `NcBGL`, modelled after *N. crassa* GH1-1
-(NCU00130, XP_011393758.1). Adding a transporter is then the single variable,
-which is how such transporters are characterised experimentally, and it mirrors
-Part B's empty-vector control.
+(locus NCU00130, accession XP_011393758.1).
 
-**Cellobiose is absent from Yeast9 entirely** — no metabolite, no exchange
-reaction, no transport. Part C therefore *extends* the model with an
+**Cellobiose is absent from Yeast9 entirely.** Part C therefore *extends* the model with an
 extracellular and a cytosolic pool, an exchange reaction, a transporter and a
 hydrolase. Like the mannitol extension in Part B, this is reported as an
 extension and never as a result the published model produced.
@@ -262,8 +210,6 @@ extension and never as a result the published model produced.
 
 7/7 results match expectation. The transporter is **CtA** from *A. niger*
 (locus An12g09270, accession MH648002), characterised by Lin et al. (2020).
-Note that CtA is **not** the same gene as *A. nidulans* CltA/CltB (dos Reis et
-al. 2016), despite the similar name; the data file records the warning.
 
 ### Localisation is the design, not a detail
 
@@ -273,11 +219,6 @@ and releases glucose into the medium: wild type grows on that (0.1653), and
 IMK1010 cannot (0.0000), because it has no hexose transporter left to take the
 glucose back up.
 
-This matters beyond the model. "β-glucosidase" on its own is an
-under-specified construct — several well-known BGL1 enzymes are secreted, and
-in this background a secreted one would produce a dead strain no matter which
-transporter accompanied it.
-
 ### Two things asserted by tests rather than by prose
 
 - **The hydrolysis is mass-balanced**: C₁₂H₂₂O₁₁ + H₂O → 2 C₆H₁₂O₆, checked
@@ -285,58 +226,28 @@ transporter accompanied it.
   downstream would be meaningless.
 - **The reaction contains no NAD(P)H or FAD.** A β-glucosidase is a hydrolase,
   not a dehydrogenase, so there is no redox step and no cofactor imbalance to
-  resolve — unlike a cellobiose dehydrogenase, or the xylose
+  resolve, unlike a cellobiose dehydrogenase, or the xylose
   reductase/xylitol dehydrogenase pair.
 
 ### What the transport mechanism costs
 
 CtA's mechanism is not confirmed in the source, so both proton symport and
 facilitated diffusion are run and reported. Growth/no-growth is unaffected;
-symport costs **2.7%** of growth rate (0.1609 against 0.1653). Per hexose that
-is half the cost of proton-coupled glucose uptake, because one symport event
-carries two hexose units — which is the standard energetic argument for
-cellobiose co-fermentation.
-
-### What Part C deliberately does not do
-
-**It does not rank transporters.** Yeast9 has no affinities, so any two
-cellobiose transporters with the same stoichiometry yield an identical
-prediction: the 17 cellobiose and cellodextrin transporters compiled in Xu et
-al. (2024) Table S1 would produce 17 identical rows. That is a limitation of
-flux-balance analysis, not a shortcut taken here. The question a genome-scale
-model can answer is whether transport alone suffices or a pathway is missing
-too — which is exactly what the platform strain tests.
+symport costs **2.7%** of growth rate (0.1609 against 0.1653).
 
 `data/cellobiose_constructs.csv` additionally records that GH1-1 hydrolyses
 lactose (Liu et al. 2016). **That is not modelled in this repository**; it is
 recorded as a documented possible extension only.
 
-## A hypothesis raised and withdrawn
-
-Early in the work, de Valk's ethanol/glycerol plate was read as two separate
-conditions, which implied that IMK1010 grew on glycerol alone despite lacking
-STL1. That would have required a passive uptake route, and Yeast9 constrains the
-Fps1/Aqy3 glycerol channel (`r_1172`) to export only — so a model edit making the
-channel bidirectional was proposed and did reconcile the model with the data.
-
-That plate contained **both** 2% ethanol and 2% glycerol. Ethanol requires no
-sugar transporter and accounts for the growth on its own, so there is no
-published evidence of glycerol-only growth; Nummela's empty-vector control did
-not grow on 1% glycerol. **No observation requires the edit, and it is
-withdrawn.** The function remains in `strains.py`, documented as tested and
-unused, because a channel modelled as one-way is still a real limitation of
-Yeast9 worth naming, and because a withdrawn hypothesis belongs in the record.
-
 ## Limitations
 
 - **FBA ignores kinetics, affinity, regulation and expression level.** GlpC
   required 8% glucose and 8% fructose to show growth but only 1% for the polyols,
-  which suggests low hexose affinity. The model cannot represent that: in FBA a
-  transporter either exists or it does not.
+  which suggests low hexose affinity. The model cannot represent that.
 - **Growth on a plate is not a growth rate.** The published readouts are
   growth/no-growth after 2–8 days. The predicted rates in the results files are
   therefore not comparable to anything measured, and no such comparison is made.
-- **FBA has no notion of culture format, and the two published formats
+- **FBA has no notion of culture method, and the two published methods
   disagree.** Nummela et al. also report liquid cultures, in which the porters
   did *not* restore growth on glycerol or the polyols. This project models and
   compares against the **solid** readout only, because that is what the substrate
